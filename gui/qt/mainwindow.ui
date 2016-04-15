@@ -27,7 +27,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QSlider" name="horizontalSlider">
+       <widget class="QSlider" name="radiographSlider">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -46,7 +46,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QSlider" name="horizontalSlider_3">
+       <widget class="QSlider" name="zoomSlider">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -65,28 +65,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QSlider" name="horizontalSlider_2">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="trainerButton">
         <property name="text">
-         <string>PushButton</string>
+         <string>Trainer</string>
         </property>
        </widget>
       </item>

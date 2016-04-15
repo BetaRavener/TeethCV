@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\mainwindow.ui'
 #
-# Created: Sat Apr 02 03:26:59 2016
+# Created: Thu Apr 14 21:30:07 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -24,39 +24,29 @@ class Ui_MainWindow(object):
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.verticalLayout.setContentsMargins(-1, -1, 0, -1)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.horizontalSlider = QtWidgets.QSlider(self.centralwidget)
+        self.radiographSlider = QtWidgets.QSlider(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.horizontalSlider.sizePolicy().hasHeightForWidth())
-        self.horizontalSlider.setSizePolicy(sizePolicy)
-        self.horizontalSlider.setMinimumSize(QtCore.QSize(200, 0))
-        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider.setObjectName("horizontalSlider")
-        self.verticalLayout.addWidget(self.horizontalSlider)
-        self.horizontalSlider_3 = QtWidgets.QSlider(self.centralwidget)
+        sizePolicy.setHeightForWidth(self.radiographSlider.sizePolicy().hasHeightForWidth())
+        self.radiographSlider.setSizePolicy(sizePolicy)
+        self.radiographSlider.setMinimumSize(QtCore.QSize(200, 0))
+        self.radiographSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.radiographSlider.setObjectName("radiographSlider")
+        self.verticalLayout.addWidget(self.radiographSlider)
+        self.zoomSlider = QtWidgets.QSlider(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.horizontalSlider_3.sizePolicy().hasHeightForWidth())
-        self.horizontalSlider_3.setSizePolicy(sizePolicy)
-        self.horizontalSlider_3.setMinimumSize(QtCore.QSize(200, 0))
-        self.horizontalSlider_3.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider_3.setObjectName("horizontalSlider_3")
-        self.verticalLayout.addWidget(self.horizontalSlider_3)
-        self.horizontalSlider_2 = QtWidgets.QSlider(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.horizontalSlider_2.sizePolicy().hasHeightForWidth())
-        self.horizontalSlider_2.setSizePolicy(sizePolicy)
-        self.horizontalSlider_2.setMinimumSize(QtCore.QSize(200, 0))
-        self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider_2.setObjectName("horizontalSlider_2")
-        self.verticalLayout.addWidget(self.horizontalSlider_2)
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setObjectName("pushButton")
-        self.verticalLayout.addWidget(self.pushButton)
+        sizePolicy.setHeightForWidth(self.zoomSlider.sizePolicy().hasHeightForWidth())
+        self.zoomSlider.setSizePolicy(sizePolicy)
+        self.zoomSlider.setMinimumSize(QtCore.QSize(200, 0))
+        self.zoomSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.zoomSlider.setObjectName("zoomSlider")
+        self.verticalLayout.addWidget(self.zoomSlider)
+        self.trainerButton = QtWidgets.QPushButton(self.centralwidget)
+        self.trainerButton.setObjectName("trainerButton")
+        self.verticalLayout.addWidget(self.trainerButton)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout.addLayout(self.verticalLayout)
@@ -75,5 +65,5 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "PushButton"))
+        self.trainerButton.setText(_translate("MainWindow", "Trainer"))
 

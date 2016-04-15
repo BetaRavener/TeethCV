@@ -1,13 +1,16 @@
 import sys
 
-import cv2
 import numpy as np
-from PyQt5.QtGui import QImage, qRgb, QPixmap, QPen, QColor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtGui import QImage, qRgb, QPixmap
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QDialog
 
 from gui.mainwindow import Ui_MainWindow
+from gui.trainer import Ui_Trainer
+from src.datamanager import DataManager
+from src.trainerdialog import TrainerDialog
 
-gray_color_table = [qRgb(i, i, i) for i in range(256)]
+gray_color_table = [qRgb(gctIdx, gctIdx, gctIdx) for gctIdx in range(256)]
 
 
 class NotImplementedException(object):
@@ -35,7 +38,20 @@ def toQImage(im, copy=False):
     raise NotImplementedException
 
 
+class InteractiveGraphicsScene(QGraphicsScene):
+    clicked = pyqtSignal()
+
+    def __init__(self):
+        super(QGraphicsScene, self).__init__()
+
+    def mouseReleaseEvent(self, QGraphicsSceneMouseEvent):
+        self.clicked.emit()
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
+    scene = None
+    data_manager = None
+
     current_sample = 0
     current_scale = 0
 
@@ -45,24 +61,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Set up the user interface from Designer.
         self.setupUi(self)
 
-        self.load_sample(self.current_sample)
+        self.scene = InteractiveGraphicsScene()
+        # self.scene.clicked.connect()
+
+        self.data_manager = DataManager()
+
+        self.graphicsView.setScene(self.scene)
+
+        self.display_radiograph(self.current_sample)
 
         # Connect up the buttons.
         # self.okButton.clicked.connect(self.accept)
         # self.cancelButton.clicked.connect(self.reject)
-        self.horizontalSlider.setValue(self.current_sample)
-        self.horizontalSlider.setMinimum(1)
-        self.horizontalSlider.setMaximum(14)
-        self.horizontalSlider.valueChanged.connect(self.set_sample)
+        self.radiographSlider.setValue(self.current_sample)
+        self.radiographSlider.setMinimum(1)
+        self.radiographSlider.setMaximum(self.data_manager.number_of_radiographs)
+        self.radiographSlider.valueChanged.connect(self.set_sample)
 
-        self.horizontalSlider_2.setMinimum(-10)
-        self.horizontalSlider_2.setMaximum(10)
-        self.horizontalSlider_2.setValue(self.current_scale)
-        self.horizontalSlider_2.valueChanged.connect(self.change_scale)
+        self.zoomSlider.setMinimum(-10)
+        self.zoomSlider.setMaximum(10)
+        self.zoomSlider.setValue(self.current_scale)
+        self.zoomSlider.valueChanged.connect(self.change_scale)
+
+        self.trainerButton.clicked.connect(self.open_trainer)
+
+    def open_trainer(self):
+        dialog = TrainerDialog(self.data_manager)
+        dialog.exec_()
 
     def set_sample(self, sampleId):
         self.current_sample = sampleId - 1
-        self.load_sample(self.current_sample)
+        self.display_radiograph(self.current_sample)
 
     def change_scale(self, scale):
         self.current_scale = scale
@@ -70,47 +99,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         real_scale = 1 + scale * (0.1 if scale >= 0 else 0.05)
         self.graphicsView.scale(real_scale, real_scale)
 
-    def draw_landmarks(self, scene, landmarks):
-        assert isinstance(scene, QGraphicsScene)
-        assert isinstance(landmarks, np.ndarray)
+    def display_radiograph(self, idx):
+        self.scene.clear()
 
-        outline_pen = QPen(QColor.fromRgb(255, 0, 0))
-        point_pen = QPen(QColor.fromRgb(0, 255, 0))
-        point_size = 2
-
-        count = landmarks.shape[0]
-        for i in range(0, count):
-            scene.addLine(landmarks[i][0], landmarks[i][1], landmarks[(i + 1) % count][0],
-                          landmarks[(i + 1) % count][1], pen=outline_pen)
-        for i in range(0, count):
-            scene.addEllipse(landmarks[i][0] - point_size, landmarks[i][1] - point_size,
-                             point_size * 2, point_size * 2, pen=point_pen)
-
-    def read_landmarks(self, filename):
-        with open(filename) as landmarks_file:
-            arr = np.array(landmarks_file.readlines(), dtype=float)
-
-        if arr is not None:
-            arr = arr.reshape((arr.shape[0] / 2, 2))
-
-        return arr
-
-    def load_sample(self, idx):
-        scene = QGraphicsScene()
+        radiograph = self.data_manager.radiographs[idx]
 
         # Load and draw image
-        cv_img = cv2.imread('./data/Radiographs/%02d.tif' % (idx + 1))
-        img = toQImage(cv_img)
-        scene.addPixmap(QPixmap.fromImage(img))
+        img = toQImage(radiograph.image)
+        self.scene.addPixmap(QPixmap.fromImage(img))
 
-        # Load and draw landmarks
-        for i in range(0, 8):
-            landmarks = self.read_landmarks('./data/Landmarks/original/landmarks%d-%d.txt' % (idx + 1, i + 1))
-            self.draw_landmarks(scene, landmarks)
+        for tooth in radiograph.teeth:
+            tooth.draw(self.scene, True, True, True)
 
         # Set generated scene into the view
-        self.graphicsView.setScene(scene)
-        self.graphicsView.resetTransform
+        self.graphicsView.resetTransform()
+        self.graphicsView.centerOn(self.scene.width() / 2, self.scene.height() / 2)
+        self.current_scale = 0
+        self.zoomSlider.setValue(0)
 
 
 # Main Function
