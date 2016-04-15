@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\trainer.ui'
 #
-# Created: Thu Apr 14 21:30:07 2016
+# Created: Fri Apr 15 19:59:26 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -35,6 +35,17 @@ class Ui_Trainer(object):
         self.trainButton = QtWidgets.QPushButton(Trainer)
         self.trainButton.setObjectName("trainButton")
         self.verticalLayout_2.addWidget(self.trainButton)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setContentsMargins(-1, 10, -1, -1)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label = QtWidgets.QLabel(Trainer)
+        self.label.setObjectName("label")
+        self.horizontalLayout.addWidget(self.label)
+        self.compCountLabel = QtWidgets.QLabel(Trainer)
+        self.compCountLabel.setText("")
+        self.compCountLabel.setObjectName("compCountLabel")
+        self.horizontalLayout.addWidget(self.compCountLabel)
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem1)
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
@@ -55,4 +66,5 @@ class Ui_Trainer(object):
         Trainer.setWindowTitle(_translate("Trainer", "Dialog"))
         self.alignButton.setText(_translate("Trainer", "Align"))
         self.trainButton.setText(_translate("Trainer", "Train"))
+        self.label.setText(_translate("Trainer", "Number of components:"))
 

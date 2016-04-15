@@ -1,13 +1,13 @@
 from copy import deepcopy
 
 import numpy as np
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPen, QColor, QBrush
 from PyQt5.QtWidgets import QDialog, QGraphicsScene
-from sklearn import decomposition
 
 from gui.trainer import Ui_Trainer
 from src.datamanager import DataManager
+from src.pca import PCA
 from src.tooth import Tooth
 
 
@@ -18,8 +18,11 @@ class TrainerDialog(QDialog, Ui_Trainer):
     tooth2 = None
     align_step = 0
 
-    eigvals = None
-    eigvecs = None
+    pca = None
+
+    np.ndarray
+
+    trained = pyqtSignal(PCA)
 
     def __init__(self, data_manager):
         super(TrainerDialog, self).__init__()
@@ -38,7 +41,7 @@ class TrainerDialog(QDialog, Ui_Trainer):
 
         self.change_teeth(1)
         teeth = data_manager.get_all_teeth(False)
-        self.choiceSlider.setRange(1, len(teeth))
+        self.choiceSlider.setRange(1, len(teeth) - 1)
         self.choiceSlider.valueChanged.connect(self.change_teeth)
 
     def change_teeth(self, idx):
@@ -101,41 +104,39 @@ class TrainerDialog(QDialog, Ui_Trainer):
             new_mean_shape.align(mean_shape)
             error = new_mean_shape.sum_of_squared_distances(mean_shape)
 
-            print error
-
             mean_shape = new_mean_shape
 
-        self.scene.clear()
-        mean_shape.outline_pen = QPen(QColor.fromRgb(255, 0, 0))
-        mean_shape.outline_pen.setWidthF(0.02)
-        mean_shape.draw(self.scene, True, False, False)
-        self._focus_view()
-
-        # TODO: What layout should be used? 1: x,y,x,y... or 2: x,x,x...,y,y,y...
         data = np.zeros((112, 80))
         for i, tooth in enumerate(teeth):
             data[i, :] = tooth.landmarks.flatten()
 
-        self.eigvals, self.eigvecs = self.pca(deepcopy(data), mean_shape.landmarks.flatten())
+        self.pca = PCA()
+        self.pca.train(deepcopy(data))
+        self.pca.threshold(0.99)
 
-    @staticmethod
-    def pca(data, mean, pc_count=None):
-        """
-        Does principal component analysis on data
-        :param data: Input data (rows are features, columns are samples)
-        :param mean: Mean of input data
-        :param pc_count: Number of components to return (None returns all)
-        :return: Array of eigenvalues and matrix of eigenvectors (each row is eigenvector)
-        """
-        demeaned = data - mean
-        pca = decomposition.PCA(n_components=pc_count, whiten=False).fit(demeaned)
+        self._show_training_result()
 
-        eigvals = pca.explained_variance_ratio_ / np.linalg.norm(pca.explained_variance_ratio_)
-        eigvecs = pca.components_
+        self.trained.emit(self.pca)
 
-        if pc_count is None:
-            pc_count = len(eigvals)
+    def _show_training_result(self):
+        mean_tooth = Tooth(self.pca.mean.reshape((self.pca.mean.size / 2, 2)))
+        test_tooth = self.data_manager.get_tooth(0, 0, True)
+        test_tooth.align(mean_tooth)
 
-        order = eigvals.argsort()[::-1]
+        tooth_data = test_tooth.landmarks.flatten()
+        projection = self.pca.project(tooth_data)
+        reconstructed_data = self.pca.reconstruct(projection)
 
-        return eigvals[order[0:pc_count]], eigvecs[:, order[0:pc_count]].T
+        shapes = [self.pca.mean, tooth_data, reconstructed_data]
+        colors = [[255, 0, 0], [0, 255, 255], [255, 255, 0]]
+
+        self.scene.clear()
+        for i, shape in enumerate(shapes):
+            tooth = Tooth(shape.reshape((shape.size / 2, 2)))
+            r, g, b = colors[i]
+            tooth.outline_pen = QPen(QColor.fromRgb(r, g, b))
+            tooth.outline_pen.setWidthF(0.02)
+            tooth.draw(self.scene, True, False, False)
+
+        self._focus_view()
+        self.compCountLabel.setText(str(len(self.pca.eigen_values)))

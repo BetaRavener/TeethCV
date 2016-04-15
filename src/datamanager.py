@@ -28,6 +28,13 @@ class DataManager:
 
         return teeth
 
+    def count_all_teeth(self):
+        return len(self.get_all_teeth())
+
     def get_tooth(self, radiographIdx, toothIdx, make_copy=False):
         tooth = self.radiographs[radiographIdx].teeth[toothIdx]
+        return deepcopy(tooth) if make_copy else tooth
+
+    def get_tooth_from_all(self, total_tooth_idx, make_copy=False):
+        tooth = self.get_all_teeth()[total_tooth_idx]
         return deepcopy(tooth) if make_copy else tooth

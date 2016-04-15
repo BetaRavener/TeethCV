@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QDialog
 from gui.mainwindow import Ui_MainWindow
 from gui.trainer import Ui_Trainer
 from src.datamanager import DataManager
+from src.pcavisualizerdialog import PcaVisualizerDialog
 from src.trainerdialog import TrainerDialog
 
 gray_color_table = [qRgb(gctIdx, gctIdx, gctIdx) for gctIdx in range(256)]
@@ -55,6 +56,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     current_sample = 0
     current_scale = 0
 
+    pca = None
+
     def __init__(self):
         super(MainWindow, self).__init__()
 
@@ -85,8 +88,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.trainerButton.clicked.connect(self.open_trainer)
 
+        self.pcaVisualizerButton.setEnabled(False)
+        self.pcaVisualizerButton.clicked.connect(self.open_pca_visulalizer)
+
     def open_trainer(self):
         dialog = TrainerDialog(self.data_manager)
+        dialog.trained.connect(self.save_training)
+        dialog.exec_()
+
+    def save_training(self, pca):
+        self.pca = pca
+        self.pcaVisualizerButton.setEnabled(True)
+
+    def open_pca_visulalizer(self):
+        dialog = PcaVisualizerDialog(self.pca, self.data_manager)
         dialog.exec_()
 
     def set_sample(self, sampleId):

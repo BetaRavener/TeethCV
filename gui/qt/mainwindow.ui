@@ -72,6 +72,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pcaVisualizerButton">
+        <property name="text">
+         <string>PCA Visualizer</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
