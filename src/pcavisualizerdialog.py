@@ -41,7 +41,7 @@ class PcaVisualizerDialog(QDialog, Ui_PcaVisualizerDialog):
             slider.setRange(-self.slider_resolution, self.slider_resolution)
             slider.valueChanged.connect(self.slider_moved)
             self.scrollAreaWidgetContents.layout().addWidget(slider)
-            self._scales[i] = 3 * math.sqrt(eig_val) / self.slider_resolution
+            self._scales[i] = 2 * math.sqrt(eig_val) / self.slider_resolution
 
         self.resetButton.clicked.connect(self.reset)
 

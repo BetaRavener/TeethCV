@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\trainer.ui'
 #
-# Created: Fri Apr 15 19:59:26 2016
+# Created: Fri Apr 15 22:45:30 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -36,7 +36,7 @@ class Ui_Trainer(object):
         self.trainButton.setObjectName("trainButton")
         self.verticalLayout_2.addWidget(self.trainButton)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setContentsMargins(-1, 10, -1, -1)
+        self.horizontalLayout.setContentsMargins(-1, 0, -1, -1)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label = QtWidgets.QLabel(Trainer)
         self.label.setObjectName("label")

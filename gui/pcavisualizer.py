@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\pcavisualizer.ui'
 #
-# Created: Fri Apr 15 19:59:26 2016
+# Created: Fri Apr 15 22:45:30 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,15 +23,18 @@ class Ui_PcaVisualizerDialog(object):
         self.graphicsView.setObjectName("graphicsView")
         self.horizontalLayout.addWidget(self.graphicsView)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_3.setContentsMargins(0, -1, -1, -1)
+        self.verticalLayout_3.setContentsMargins(0, 0, -1, -1)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.label_2 = QtWidgets.QLabel(PcaVisualizerDialog)
+        self.label_2.setObjectName("label_2")
+        self.verticalLayout_3.addWidget(self.label_2)
         self.scrollArea = QtWidgets.QScrollArea(PcaVisualizerDialog)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 112, 188))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 118, 167))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
@@ -42,10 +45,17 @@ class Ui_PcaVisualizerDialog(object):
         self.resetButton = QtWidgets.QPushButton(PcaVisualizerDialog)
         self.resetButton.setObjectName("resetButton")
         self.verticalLayout_3.addWidget(self.resetButton)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setContentsMargins(-1, 0, -1, -1)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label = QtWidgets.QLabel(PcaVisualizerDialog)
+        self.label.setObjectName("label")
+        self.horizontalLayout_2.addWidget(self.label)
         self.choiceSlider = QtWidgets.QSlider(PcaVisualizerDialog)
         self.choiceSlider.setOrientation(QtCore.Qt.Horizontal)
         self.choiceSlider.setObjectName("choiceSlider")
-        self.verticalLayout_3.addWidget(self.choiceSlider)
+        self.horizontalLayout_2.addWidget(self.choiceSlider)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
         self.horizontalLayout.addLayout(self.verticalLayout_3)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.verticalLayout.addLayout(self.verticalLayout_2)
@@ -63,5 +73,7 @@ class Ui_PcaVisualizerDialog(object):
     def retranslateUi(self, PcaVisualizerDialog):
         _translate = QtCore.QCoreApplication.translate
         PcaVisualizerDialog.setWindowTitle(_translate("PcaVisualizerDialog", "Dialog"))
+        self.label_2.setText(_translate("PcaVisualizerDialog", "Reconstruction params:"))
         self.resetButton.setText(_translate("PcaVisualizerDialog", "Reset"))
+        self.label.setText(_translate("PcaVisualizerDialog", "Project"))
 

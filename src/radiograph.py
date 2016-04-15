@@ -17,6 +17,7 @@ def read_landmarks(filename):
 class Radiograph:
     teeth = None
     idx = None
+    path_to_img = None
 
     def __init__(self):
         self.teeth = list()
@@ -30,6 +31,8 @@ class Radiograph:
                 landmarks = read_landmarks('./data/Landmarks/original/landmarks%d-%d.txt' % (idx + 1, i + 1))
                 self.teeth.append(Tooth(landmarks))
 
+        self.path_to_img = './data/Radiographs/%02d.tif' % (self.idx + 1)
+
     @property
     def image(self):
-        return cv2.imread('./data/Radiographs/%02d.tif' % (self.idx + 1))
+        return cv2.cvtColor(cv2.imread(self.path_to_img), cv2.COLOR_BGR2GRAY)

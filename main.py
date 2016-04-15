@@ -1,5 +1,6 @@
 import sys
 
+import cv2
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QImage, qRgb, QPixmap
@@ -8,45 +9,11 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QDialog
 from gui.mainwindow import Ui_MainWindow
 from gui.trainer import Ui_Trainer
 from src.datamanager import DataManager
+from src.fitterdialog import FitterDialog
+from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.pcavisualizerdialog import PcaVisualizerDialog
 from src.trainerdialog import TrainerDialog
-
-gray_color_table = [qRgb(gctIdx, gctIdx, gctIdx) for gctIdx in range(256)]
-
-
-class NotImplementedException(object):
-    pass
-
-
-def toQImage(im, copy=False):
-    if im is None:
-        return QImage()
-
-    if im.dtype == np.uint8:
-        if len(im.shape) == 2:
-            qim = QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_Indexed8)
-            qim.setColorTable(gray_color_table)
-            return qim.copy() if copy else qim
-
-        elif len(im.shape) == 3:
-            if im.shape[2] == 3:
-                qim = QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_RGB888)
-                return qim.copy() if copy else qim
-            elif im.shape[2] == 4:
-                qim = QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_ARGB32)
-                return qim.copy() if copy else qim
-
-    raise NotImplementedException
-
-
-class InteractiveGraphicsScene(QGraphicsScene):
-    clicked = pyqtSignal()
-
-    def __init__(self):
-        super(QGraphicsScene, self).__init__()
-
-    def mouseReleaseEvent(self, QGraphicsSceneMouseEvent):
-        self.clicked.emit()
+from src.utils import toQImage
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -91,6 +58,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pcaVisualizerButton.setEnabled(False)
         self.pcaVisualizerButton.clicked.connect(self.open_pca_visulalizer)
 
+        self.fitterButton.setEnabled(False)
+        self.fitterButton.clicked.connect(self.open_fitter)
+
     def open_trainer(self):
         dialog = TrainerDialog(self.data_manager)
         dialog.trained.connect(self.save_training)
@@ -99,9 +69,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def save_training(self, pca):
         self.pca = pca
         self.pcaVisualizerButton.setEnabled(True)
+        self.fitterButton.setEnabled(True)
 
     def open_pca_visulalizer(self):
         dialog = PcaVisualizerDialog(self.pca, self.data_manager)
+        dialog.exec_()
+
+    def open_fitter(self):
+        dialog = FitterDialog(self.data_manager)
         dialog.exec_()
 
     def set_sample(self, sampleId):
