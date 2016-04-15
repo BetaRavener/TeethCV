@@ -112,7 +112,7 @@ class TrainerDialog(QDialog, Ui_Trainer):
 
         self.pca = PCA()
         self.pca.train(deepcopy(data))
-        self.pca.threshold(0.99)
+        self.pca.threshold(self.thresholdSpinBox.value())
 
         self._show_training_result()
 

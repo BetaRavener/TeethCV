@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\fitterdialog.ui'
 #
-# Created: Fri Apr 15 22:45:30 2016
+# Created: Sat Apr 16 00:49:57 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -32,10 +32,17 @@ class Ui_fitterDialog(object):
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setContentsMargins(0, -1, -1, -1)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setContentsMargins(-1, 0, -1, -1)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label = QtWidgets.QLabel(fitterDialog)
+        self.label.setObjectName("label")
+        self.horizontalLayout_4.addWidget(self.label)
         self.zoomSlider = QtWidgets.QSlider(fitterDialog)
         self.zoomSlider.setOrientation(QtCore.Qt.Horizontal)
         self.zoomSlider.setObjectName("zoomSlider")
-        self.verticalLayout_2.addWidget(self.zoomSlider)
+        self.horizontalLayout_4.addWidget(self.zoomSlider)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
         self.animateButton = QtWidgets.QPushButton(fitterDialog)
         self.animateButton.setObjectName("animateButton")
         self.verticalLayout_2.addWidget(self.animateButton)
@@ -61,6 +68,7 @@ class Ui_fitterDialog(object):
         _translate = QtCore.QCoreApplication.translate
         fitterDialog.setWindowTitle(_translate("fitterDialog", "Dialog"))
         self.openButton.setText(_translate("fitterDialog", "Open"))
+        self.label.setText(_translate("fitterDialog", "Zoom"))
         self.animateButton.setText(_translate("fitterDialog", "Animate"))
         self.fitButton.setText(_translate("fitterDialog", "Fit"))
 

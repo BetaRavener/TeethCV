@@ -145,9 +145,11 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     def _animator_end(self):
         self.animateButton.setText("Animate")
         self.animator = None
+        self.fitButton.setEnabled(True)
 
     def _disable_ui(self):
         self.animateButton.setText("Stop")
+        self.fitButton.setEnabled(False)
 
     def _update_image(self, image):
         if self.animation_overlay is not None:
@@ -164,14 +166,14 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.scene.setSceneRect(rect)
         self.graphicsView.fitInView(rect, Qt.KeepAspectRatio)
 
-    def display_radiograph(self):
+    def display_radiograph(self, image=None):
         self.scene.clear()
         self.animation_overlay = None
         self.indicator_position = None
         self.indicator = None
 
         # Load and draw image
-        img = toQImage(self.radiograph.image)
+        img = toQImage(self.radiograph.image if image is None else image)
         self.scene.addPixmap(QPixmap.fromImage(img))
 
         # Set generated scene into the view

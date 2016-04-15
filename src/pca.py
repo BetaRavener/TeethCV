@@ -61,6 +61,7 @@ class PCA(object):
         value = max(0., min(value, 1.))
 
         # Compute explained variance
+        # Source: https://plot.ly/ipython-notebooks/principal-component-analysis/
         tot = sum(self.eigen_values)
         var_exp = self.eigen_values / tot
         cum_var_exp = np.cumsum(var_exp)

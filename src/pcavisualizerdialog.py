@@ -105,14 +105,15 @@ class PcaVisualizerDialog(QDialog, Ui_PcaVisualizerDialog):
         tooth = Tooth(landmarks)
 
         self.scene.clear()
-        tooth.outline_pen.setWidthF(0.02)
-        tooth.draw(self.scene, True, False, False)
 
         if original_tooth is not None:
             original_tooth = deepcopy(original_tooth)
             original_tooth.outline_pen = QPen(QColor.fromRgb(0, 255, 255))
             original_tooth.outline_pen.setWidthF(0.02)
             original_tooth.draw(self.scene, True, False, False)
+
+        tooth.outline_pen.setWidthF(0.02)
+        tooth.draw(self.scene, True, False, False)
 
         self._focus_view()
 
