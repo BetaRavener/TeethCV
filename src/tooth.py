@@ -3,23 +3,42 @@ from PyQt5.QtGui import QColor, QBrush, QFont, QPen
 from PyQt5.QtWidgets import QGraphicsSimpleTextItem
 import math
 
+from src.utils import line_normal
+
 
 class Tooth:
     landmarks = None
-    centroid = None
+    _centroid = None
+    _normals = None
 
     landmark_size = 2
     outline_pen = QPen(QColor.fromRgb(255, 0, 0))
     point_pen = QPen(QColor.fromRgb(0, 255, 0))
     text_brush = QBrush(QColor.fromRgb(0, 0, 255))
     centroid_color = QColor.fromRgb(255, 255, 0)
+    normals_pen = QPen(QColor.fromRgb(0, 255, 255))
 
     def __init__(self, landmarks):
         self.landmarks = landmarks
         self._calculate_centroid()
 
     def _calculate_centroid(self):
-        self.centroid = np.mean(self.landmarks, axis=0)
+        self._centroid = np.mean(self.landmarks, axis=0)
+
+    def _calculate_normals(self):
+        point_count = self.landmarks.shape[0]
+        left_normals = np.empty(self.landmarks.shape)
+        right_normals = np.empty(self.landmarks.shape)
+        for i, point in enumerate(self.landmarks):
+            left_normals[i] = line_normal(self.landmarks[i - 1], point)
+            right_normals[i] = line_normal(point, self.landmarks[(i + 1) % point_count])
+
+        # Normalize normal vectors to have the same weight
+        left_normals /= np.linalg.norm(left_normals, axis=1).reshape(40, 1)
+        right_normals /= np.linalg.norm(right_normals, axis=1).reshape(40, 1)
+        # Compute final normals and again normalize result
+        self._normals = (left_normals + right_normals)
+        self._normals /= np.linalg.norm(self._normals, axis=1).reshape(40, 1)
 
     def sum_of_squared_distances(self, other):
         """
@@ -48,7 +67,7 @@ class Tooth:
         angle = math.atan(top_sum / bottom_sum)
 
         rot_matrix = np.array([[np.cos(angle), -np.sin(angle)],
-                              [np.sin(angle), np.cos(angle)]])
+                               [np.sin(angle), np.cos(angle)]])
 
         self.landmarks = self.landmarks.dot(rot_matrix)
 
@@ -57,7 +76,7 @@ class Tooth:
         Moves all landmarks so that centroid is at the origin (0,0)
         """
         self.landmarks = self.landmarks - self.centroid
-        self._calculate_centroid()
+        self._centroid = None
 
     def normalize_shape(self):
         """
@@ -74,8 +93,9 @@ class Tooth:
         scaling_factor = np.sqrt(scaling_factor / self.landmarks.size)
 
         self.landmarks *= 1 / scaling_factor
+        self._normals = None
 
-    def draw(self, scene, outline, landmarks, text):
+    def draw(self, scene, outline=True, landmarks=False, text=False, normals=False):
         count = self.landmarks.shape[0]
 
         if outline:
@@ -92,6 +112,16 @@ class Tooth:
                              self.landmark_size * 2, self.landmark_size * 2,
                              pen=QPen(self.centroid_color), brush=QBrush(self.centroid_color))
 
+        if normals:
+            length = self.normals_pen.widthF() * 15
+            for i, normal in enumerate(self.normals):
+                landmark = self.landmarks[i]
+                assert isinstance(landmark, np.ndarray)
+
+                pt1 = landmark - normal * length
+                pt2 = landmark + normal * length
+                scene.addLine(pt1[0], pt1[1], pt2[0], pt2[1], pen=self.normals_pen)
+
         if text:
             for i in range(0, count):
                 font = QFont("Times", 6)
@@ -100,3 +130,17 @@ class Tooth:
                 text.setPos(self.landmarks[i][0] + self.landmark_size,
                             self.landmarks[i][1] - text.boundingRect().height() / 2)
                 text.setBrush(self.text_brush)
+
+    @property
+    def normals(self):
+        if self._normals is None:
+            self._calculate_normals()
+
+        return self._normals
+
+    @property
+    def centroid(self):
+        if self._centroid is None:
+            self._calculate_centroid()
+
+        return self._centroid

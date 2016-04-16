@@ -27,3 +27,10 @@ def toQImage(im, copy=False):
                 return qim.copy() if copy else qim
 
     raise NotImplementedException
+
+
+def line_normal(pt1, pt2):
+    # Find line vector
+    vec = (pt1 - pt2)
+    # Swap coordinates and negate one of them to find normal
+    return vec[1], -vec[0]
