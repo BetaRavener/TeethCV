@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\fitterdialog.ui'
 #
-# Created: Sat Apr 16 00:49:57 2016
+# Created: Sun Apr 17 02:08:58 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -43,6 +43,12 @@ class Ui_fitterDialog(object):
         self.zoomSlider.setObjectName("zoomSlider")
         self.horizontalLayout_4.addWidget(self.zoomSlider)
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
+        self.filterButton = QtWidgets.QPushButton(fitterDialog)
+        self.filterButton.setObjectName("filterButton")
+        self.verticalLayout_2.addWidget(self.filterButton)
+        self.detectEdgesButton = QtWidgets.QPushButton(fitterDialog)
+        self.detectEdgesButton.setObjectName("detectEdgesButton")
+        self.verticalLayout_2.addWidget(self.detectEdgesButton)
         self.animateButton = QtWidgets.QPushButton(fitterDialog)
         self.animateButton.setObjectName("animateButton")
         self.verticalLayout_2.addWidget(self.animateButton)
@@ -69,6 +75,8 @@ class Ui_fitterDialog(object):
         fitterDialog.setWindowTitle(_translate("fitterDialog", "Dialog"))
         self.openButton.setText(_translate("fitterDialog", "Open"))
         self.label.setText(_translate("fitterDialog", "Zoom"))
+        self.filterButton.setText(_translate("fitterDialog", "Filter Image"))
+        self.detectEdgesButton.setText(_translate("fitterDialog", "Detect Edges"))
         self.animateButton.setText(_translate("fitterDialog", "Animate"))
         self.fitButton.setText(_translate("fitterDialog", "Fit"))
 

@@ -73,6 +73,20 @@
         </layout>
        </item>
        <item>
+        <widget class="QPushButton" name="filterButton">
+         <property name="text">
+          <string>Filter Image</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="detectEdgesButton">
+         <property name="text">
+          <string>Detect Edges</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="animateButton">
          <property name="text">
           <string>Animate</string>

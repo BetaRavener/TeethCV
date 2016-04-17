@@ -2,6 +2,9 @@ import random
 from time import sleep
 
 import math
+
+import cv2
+import numpy as np
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QRect, QRectF
 from PyQt5.QtGui import QImage, QColor, QPainter, QPainterPath, QPixmap, QPen, QBrush
 from PyQt5.QtWidgets import QDialog, QGraphicsScene, QFileDialog, QGraphicsSceneMouseEvent
@@ -42,8 +45,8 @@ class Animator(QThread):
             painter = QPainter()
             painter.begin(image)
             painter.setPen(QPen(QColor.fromRgb(255, 0, 0)))
-            #TODO: The active shape model should have a function "make step"
-            #TODO: so that this one can animate the steps
+            # TODO: The active shape model should have a function "make step"
+            # TODO: so that this one can animate the steps
             painter.drawLine(0, n, self.width, self.height)
             painter.end()
 
@@ -69,7 +72,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     animation_overlay = None
     indicator_position = None
     indicator = None
-    radiograph = None
+    image = None
 
     def __init__(self, data_manager):
         super(FitterDialog, self).__init__()
@@ -83,8 +86,8 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.graphicsView.setScene(self.scene)
         self.scene.clicked.connect(self._set_indicator)
 
-        self.radiograph = self.data_manager.radiographs[0]
-        self.display_radiograph()
+        self.image = self.data_manager.radiographs[0].image
+        self.display_image()
 
         self.openButton.clicked.connect(self._open_radiograph)
 
@@ -93,6 +96,8 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.zoomSlider.setValue(self.current_scale)
         self.zoomSlider.valueChanged.connect(self.change_scale)
 
+        self.filterButton.clicked.connect(self._filter_image)
+        self.detectEdgesButton.clicked.connect(self._detect_edges)
         self.animateButton.clicked.connect(self._animator_entry)
 
     def _open_radiograph(self):
@@ -101,9 +106,10 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         file_dialog.setFileMode(QFileDialog.ExistingFile)
         file_dialog.setNameFilter("Radiograph (*.tif)")
         if file_dialog.exec_() and len(file_dialog.selectedFiles()) == 1:
-            self.radiograph = Radiograph()
-            self.radiograph.path_to_img = file_dialog.selectedFiles()[0]
-            self.display_radiograph()
+            radiograph = Radiograph()
+            radiograph.path_to_img = file_dialog.selectedFiles()[0]
+            self.image = radiograph.image
+            self.display_image()
 
     def change_scale(self, scale):
         self.current_scale = scale
@@ -166,14 +172,14 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.scene.setSceneRect(rect)
         self.graphicsView.fitInView(rect, Qt.KeepAspectRatio)
 
-    def display_radiograph(self, image=None):
+    def display_image(self):
         self.scene.clear()
         self.animation_overlay = None
         self.indicator_position = None
         self.indicator = None
 
         # Load and draw image
-        img = toQImage(self.radiograph.image if image is None else image)
+        img = toQImage(self.image)
         self.scene.addPixmap(QPixmap.fromImage(img))
 
         # Set generated scene into the view
@@ -181,3 +187,25 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.graphicsView.centerOn(self.scene.width() / 2, self.scene.height() / 2)
         self.current_scale = 0
         self.zoomSlider.setValue(0)
+
+    def _filter_image(self):
+        self.image = cv2.medianBlur(self.image, 11)
+        # self.image = cv2.adaptiveThreshold(self.image, 100, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 0)
+        self.display_image()
+
+    def _detect_edges(self):
+        # Canny
+        # Nice clean edges
+        edges = cv2.Canny(self.image, 5, 30)
+        # Still relatively nice and more of them
+        # edges = cv2.Canny(self.image, 5, 15)
+
+        # Laplacian
+        # edges = cv2.Laplacian(self.image, cv2.CV_64F, ksize=1)
+
+        # Display with image
+        # self.image[edges.astype(np.bool)] = 0
+
+        # Display without image
+        self.image = np.abs(edges).astype(np.uint8)*100
+        self.display_image()

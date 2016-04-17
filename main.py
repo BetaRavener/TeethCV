@@ -12,6 +12,7 @@ from src.datamanager import DataManager
 from src.fitterdialog import FitterDialog
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.pcavisualizerdialog import PcaVisualizerDialog
+from src.sampler import Sampler
 from src.trainerdialog import TrainerDialog
 from src.utils import toQImage
 
@@ -58,7 +59,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pcaVisualizerButton.setEnabled(False)
         self.pcaVisualizerButton.clicked.connect(self.open_pca_visulalizer)
 
-        self.fitterButton.setEnabled(False)
+        #self.fitterButton.setEnabled(False)
         self.fitterButton.clicked.connect(self.open_fitter)
 
     def open_trainer(self):
