@@ -214,12 +214,20 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.display_image()
 
     def _create_appearance_models(self):
-        #teeths = self.data_manager.get_all_teeth(True)
-        tooth = self.data_manager.get_tooth(0,0, True)
-        assert isinstance(tooth, Tooth)
-        samples = Sampler.sample(tooth, self.data_manager.radiographs[0].image, 4)
-        derived_samples = self._compute_derivative(samples)
-        print derived_samples.shape
+        teeths = self.data_manager.get_all_teeth(True)
+        derived_samples = []
+        # For every teeth
+        for i in range(0, len(teeths)):
+            tooth = teeths[i]
+            assert isinstance(tooth, Tooth)
+            # Get samples (40, X), where X is number 2*number_of_samples
+            samples = Sampler.sample(tooth, self.data_manager.radiographs[int(i / 8)].image, 4)
+            print samples.shape
+            # Get derived samples (40, X-1)
+            derived_samples.append(self._compute_derivative(samples))
+        print len(derived_samples)
+
+        # Output: for every teeth average of derivatives (8, 40)
 
     def _compute_derivative(self, samples):
         '''
