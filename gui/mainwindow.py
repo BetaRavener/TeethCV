@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\mainwindow.ui'
 #
-# Created: Sun Apr 17 02:08:58 2016
+# Created: Tue Apr 19 15:29:32 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -61,6 +61,9 @@ class Ui_MainWindow(object):
         self.trainerButton = QtWidgets.QPushButton(self.centralwidget)
         self.trainerButton.setObjectName("trainerButton")
         self.verticalLayout.addWidget(self.trainerButton)
+        self.filteringButton = QtWidgets.QPushButton(self.centralwidget)
+        self.filteringButton.setObjectName("filteringButton")
+        self.verticalLayout.addWidget(self.filteringButton)
         self.pcaVisualizerButton = QtWidgets.QPushButton(self.centralwidget)
         self.pcaVisualizerButton.setObjectName("pcaVisualizerButton")
         self.verticalLayout.addWidget(self.pcaVisualizerButton)
@@ -88,6 +91,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "Sample"))
         self.label.setText(_translate("MainWindow", "Zoom"))
         self.trainerButton.setText(_translate("MainWindow", "Trainer"))
+        self.filteringButton.setText(_translate("MainWindow", "Filtering"))
         self.pcaVisualizerButton.setText(_translate("MainWindow", "PCA Visualizer"))
         self.fitterButton.setText(_translate("MainWindow", "Fitter"))
 

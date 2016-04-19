@@ -27,7 +27,7 @@ class Radiograph:
 
         # Load and draw landmarks
         if annotated:
-            for i in range(0, 8):
+            for i in range(0, 4):
                 landmarks = read_landmarks('./data/Landmarks/original/landmarks%d-%d.txt' % (idx + 1, i + 1))
                 self.teeth.append(Tooth(landmarks))
 

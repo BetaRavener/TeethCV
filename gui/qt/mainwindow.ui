@@ -100,6 +100,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="filteringButton">
+        <property name="text">
+         <string>Filtering</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pcaVisualizerButton">
         <property name="text">
          <string>PCA Visualizer</string>

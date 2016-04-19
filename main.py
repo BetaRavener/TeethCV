@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QDialog
 from gui.mainwindow import Ui_MainWindow
 from gui.trainer import Ui_Trainer
 from src.datamanager import DataManager
+from src.filteringdialog import FilteringDialog
 from src.fitterdialog import FitterDialog
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.pcavisualizerdialog import PcaVisualizerDialog
@@ -55,6 +56,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.zoomSlider.valueChanged.connect(self.change_scale)
 
         self.trainerButton.clicked.connect(self.open_trainer)
+        self.filteringButton.clicked.connect(self.open_filtering)
 
         self.pcaVisualizerButton.setEnabled(False)
         self.pcaVisualizerButton.clicked.connect(self.open_pca_visulalizer)
@@ -65,6 +67,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def open_trainer(self):
         dialog = TrainerDialog(self.data_manager)
         dialog.trained.connect(self.save_training)
+        dialog.exec_()
+
+    def open_filtering(self):
+        dialog = FilteringDialog(self.data_manager)
         dialog.exec_()
 
     def save_training(self, pca):

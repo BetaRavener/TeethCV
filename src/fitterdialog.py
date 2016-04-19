@@ -1,20 +1,17 @@
 import random
 from time import sleep
 
-import math
-
 import cv2
 import numpy as np
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QRect, QRectF
-from PyQt5.QtGui import QImage, QColor, QPainter, QPainterPath, QPixmap, QPen, QBrush
-from PyQt5.QtWidgets import QDialog, QGraphicsScene, QFileDialog, QGraphicsSceneMouseEvent
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QImage, QColor, QPainter, QPixmap, QPen, QBrush
+from PyQt5.QtWidgets import QDialog, QFileDialog, QGraphicsSceneMouseEvent
 
 from gui.fitterdialog import Ui_fitterDialog
 from src.datamanager import DataManager
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
 from src.utils import toQImage
-
 
 class Animator(QThread):
     output_signal = pyqtSignal(QImage)
@@ -87,6 +84,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.scene.clicked.connect(self._set_indicator)
 
         self.image = self.data_manager.radiographs[0].image
+        self._crop_image()
         self.display_image()
 
         self.openButton.clicked.connect(self._open_radiograph)
@@ -98,7 +96,16 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
         self.filterButton.clicked.connect(self._filter_image)
         self.detectEdgesButton.clicked.connect(self._detect_edges)
-        self.animateButton.clicked.connect(self._animator_entry)
+        self.animateButton.clicked.connect(self._normalize)
+
+    def _crop_image(self):
+        h, w = self.image.shape
+        h2, w2 = h/2, w/2
+        self.image = self.image[500:1400, w2 - 400:w2 + 400].copy()
+
+    def _normalize(self):
+        self.image = (self.image / self.image.max()) * 255
+        self.display_image()
 
     def _open_radiograph(self):
         file_dialog = QFileDialog(self)
@@ -109,6 +116,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
             radiograph = Radiograph()
             radiograph.path_to_img = file_dialog.selectedFiles()[0]
             self.image = radiograph.image
+            self._crop_image()
             self.display_image()
 
     def change_scale(self, scale):
@@ -179,7 +187,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.indicator = None
 
         # Load and draw image
-        img = toQImage(self.image)
+        img = toQImage(self.image.astype(np.uint8))
         self.scene.addPixmap(QPixmap.fromImage(img))
 
         # Set generated scene into the view
@@ -189,23 +197,18 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.zoomSlider.setValue(0)
 
     def _filter_image(self):
-        self.image = cv2.medianBlur(self.image, 11)
-        # self.image = cv2.adaptiveThreshold(self.image, 100, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 0)
+        self.image = cv2.medianBlur(self.image, 5)
+        self.image = cv2.bilateralFilter(self.image, 17, 9, 200)
         self.display_image()
 
+    def _detect_scharr(self):
+        grad_x = cv2.Scharr(self.image, cv2.CV_64F, 1, 0) / 16
+        grad_y = cv2.Scharr(self.image, cv2.CV_64F, 0, 1) / 16
+        grad = np.sqrt(grad_x ** 2 + grad_y ** 2)
+        self.image = grad
+
     def _detect_edges(self):
-        # Canny
-        # Nice clean edges
-        edges = cv2.Canny(self.image, 5, 30)
-        # Still relatively nice and more of them
-        # edges = cv2.Canny(self.image, 5, 15)
+        # Sobel
+        self._detect_scharr()
 
-        # Laplacian
-        # edges = cv2.Laplacian(self.image, cv2.CV_64F, ksize=1)
-
-        # Display with image
-        # self.image[edges.astype(np.bool)] = 0
-
-        # Display without image
-        self.image = np.abs(edges).astype(np.uint8)*100
         self.display_image()
