@@ -12,9 +12,8 @@ from src.ActiveShapeModel import ActiveShapeModel
 from src.datamanager import DataManager
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
-from src.sampler import Sampler
-from src.tooth import Tooth
 from src.utils import toQImage
+from src.pca import PCA
 
 class Animator(QThread):
     output_signal = pyqtSignal(QImage)
@@ -74,15 +73,16 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     indicator = None
     image = None
     active_shape_model = None
+    pca = None
 
-    def __init__(self, data_manager):
+    def __init__(self, data_manager, pca):
         super(FitterDialog, self).__init__()
         self.setupUi(self)
         self.setAttribute(Qt.WA_DeleteOnClose)
 
         assert isinstance(data_manager, DataManager)
         self.data_manager = data_manager
-        self.active_shape_model = ActiveShapeModel(data_manager)
+        self.pca = pca
 
         self.scene = InteractiveGraphicsScene()
         self.graphicsView.setScene(self.scene)
@@ -221,4 +221,5 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.display_image()
 
     def _create_appearance_models(self):
+        self.active_shape_model = ActiveShapeModel(self.data_manager, self.image, self.pca)
         self.active_shape_model.create_appearance_model()

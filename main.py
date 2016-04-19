@@ -83,7 +83,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.exec_()
 
     def open_fitter(self):
-        dialog = FitterDialog(self.data_manager)
+        dialog = FitterDialog(self.data_manager, self.pca)
         dialog.exec_()
 
     def set_sample(self, sampleId):
