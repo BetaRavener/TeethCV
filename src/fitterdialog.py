@@ -13,6 +13,8 @@ from gui.fitterdialog import Ui_fitterDialog
 from src.datamanager import DataManager
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
+from src.sampler import Sampler
+from src.tooth import Tooth
 from src.utils import toQImage
 
 
@@ -99,6 +101,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.filterButton.clicked.connect(self._filter_image)
         self.detectEdgesButton.clicked.connect(self._detect_edges)
         self.animateButton.clicked.connect(self._animator_entry)
+        self.fitButton.clicked.connect(self._create_appearance_models)
 
     def _open_radiograph(self):
         file_dialog = QFileDialog(self)
@@ -201,7 +204,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         # edges = cv2.Canny(self.image, 5, 15)
 
         # Laplacian
-        # edges = cv2.Laplacian(self.image, cv2.CV_64F, ksize=1)
+        # edges = cv2.Laplacian(self.image, cv2.CV_64F, kszie=1)
 
         # Display with image
         # self.image[edges.astype(np.bool)] = 0
@@ -209,3 +212,19 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         # Display without image
         self.image = np.abs(edges).astype(np.uint8)*100
         self.display_image()
+
+    def _create_appearance_models(self):
+        #teeths = self.data_manager.get_all_teeth(True)
+        tooth = self.data_manager.get_tooth(0,0, True)
+        assert isinstance(tooth, Tooth)
+        samples = Sampler.sample(tooth, self.data_manager.radiographs[0].image, 4)
+        derived_samples = self._compute_derivative(samples)
+        print derived_samples.shape
+
+    def _compute_derivative(self, samples):
+        '''
+        Compute derivation by substracting neighbour points from left to right.
+        :param samples:
+        :return:
+        '''
+        return samples[:, 0:-1] - samples[:, 1:]
