@@ -11,6 +11,8 @@ from gui.fitterdialog import Ui_fitterDialog
 from src.datamanager import DataManager
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
+from src.sampler import Sampler
+from src.tooth import Tooth
 from src.utils import toQImage
 
 class Animator(QThread):
@@ -97,6 +99,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.filterButton.clicked.connect(self._filter_image)
         self.detectEdgesButton.clicked.connect(self._detect_edges)
         self.animateButton.clicked.connect(self._normalize)
+        self.fitButton.clicked.connect(self._create_appearance_models)
 
     def _crop_image(self):
         h, w = self.image.shape
@@ -212,3 +215,27 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self._detect_scharr()
 
         self.display_image()
+
+    def _create_appearance_models(self):
+        teeths = self.data_manager.get_all_teeth(True)
+        derived_samples = []
+        # For every teeth
+        for i in range(0, len(teeths)):
+            tooth = teeths[i]
+            assert isinstance(tooth, Tooth)
+            # Get samples (40, X), where X is number 2*number_of_samples
+            samples = Sampler.sample(tooth, self.data_manager.radiographs[int(i / 8)].image, 4)
+            print samples.shape
+            # Get derived samples (40, X-1)
+            derived_samples.append(self._compute_derivative(samples))
+        print len(derived_samples)
+
+        # Output: for every teeth average of derivatives (8, 40)
+
+    def _compute_derivative(self, samples):
+        '''
+        Compute derivation by substracting neighbour points from left to right.
+        :param samples:
+        :return:
+        '''
+        return samples[:, 0:-1] - samples[:, 1:]
