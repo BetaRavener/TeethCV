@@ -77,6 +77,7 @@ class ActiveShapeModel(object):
             position = self._find_best_position(sampled_profile, i)
             self.current_model.landmarks[i] = return_positions[i][position]
         self.position, self.scale, self.rotation =  self.current_model.align(self.mean_tooth)
+        # TODO project error - wrong dimensions
         self.b = self.pca.project(self.current_model.landmarks)
         max_deviations = self.pca.get_allowed_deviation()
         for i in range(0, self.b.shape[0]):
@@ -93,7 +94,6 @@ class ActiveShapeModel(object):
         :return:
         '''
         model_length = len(self.means_points_model[point_index])
-        print point_index, self.means_points_model[point_index]
         sampled_profile_length = sampled_profile.shape[0]
         min_value = float("inf")
         min_index = 0
