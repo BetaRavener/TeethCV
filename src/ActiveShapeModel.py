@@ -13,12 +13,14 @@ class ActiveShapeModel(object):
     pca = None
     means_points_model = []
     inverse_covariance_points_model = []
+    knobs = None
 
     def __init__(self, _data_manager, image, pca):
         assert isinstance(_data_manager, DataManager)
         self.data_manager = _data_manager
         self.image = image
         self.pca = pca
+        self._initialize_model()
 
     def create_appearance_model(self, derivative=False):
         '''
@@ -51,7 +53,7 @@ class ActiveShapeModel(object):
         assert len(self.means_points_model) == len(self.inverse_covariance_points_model)
 
     def _initialize_model(self):
-        print("ho")
+        self.knobs = np.zeros(self.pca.eigen_values.shape)
 
 
     def _compute_derivative(self, samples):

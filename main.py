@@ -26,6 +26,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     current_scale = 0
 
     pca = None
+    mean_shape = None
 
     def __init__(self):
         super(MainWindow, self).__init__()
