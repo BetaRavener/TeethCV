@@ -56,8 +56,8 @@ class ActiveShapeModel(object):
             point = radiograph_samples[:, i, :]
             mean = np.mean(point, axis=0)
             mean = self._normalize_to_one_vector(mean)
-            cov = np.cov(point)
-            inv_cov = inv(cov)
+            cov = np.cov(point.T)
+            inv_cov = np.linalg.inv(cov)
             self.means_points_model.append(mean)
             self.inverse_covariance_points_model.append(inv_cov)
         # Means and covariance arrays for points
@@ -93,7 +93,8 @@ class ActiveShapeModel(object):
         :return:
         '''
         model_length = len(self.means_points_model[point_index])
-        sampled_profile_length = len(sampled_profile)
+        print point_index, self.means_points_model[point_index]
+        sampled_profile_length = sampled_profile.shape[0]
         min_value = float("inf")
         min_index = 0
         for i in range(0, sampled_profile_length - model_length + 1):
