@@ -41,7 +41,7 @@ class Sampler(object):
         return samples
 
     @staticmethod
-    def sample(tooth, radiograph_image, sample_count):
+    def sample(tooth, radiograph_image, sample_count, return_positions=None):
         assert isinstance(tooth, Tooth)
         assert isinstance(radiograph_image, np.ndarray)
 
@@ -51,5 +51,7 @@ class Sampler(object):
             normal = tooth.normals[i]
             positions = Sampler._find_sample_positions(center_point, normal, sample_count)
             result[i] = Sampler._sample_image(radiograph_image, positions)
+            if return_positions is not None:
+                return_positions.append(positions)
 
         return result

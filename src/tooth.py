@@ -55,8 +55,9 @@ class Tooth:
         Uses procrustes analysis to align this shape to the other.
         :param other: Object to which this one should align. Must be at origin and unit sized.
         """
+        translation = self.centroid
         self.move_to_origin()
-        self.normalize_shape()
+        scale = self.normalize_shape()
 
         x = self.landmarks[:, 0]
         y = self.landmarks[:, 1]
@@ -70,6 +71,7 @@ class Tooth:
                                [np.sin(angle), np.cos(angle)]])
 
         self.landmarks = self.landmarks.dot(rot_matrix)
+        return translation, scale, -angle
 
     def move_to_origin(self):
         """
@@ -94,6 +96,7 @@ class Tooth:
 
         self.landmarks *= 1 / scaling_factor
         self._normals = None
+        return scaling_factor
 
     def draw(self, scene, outline=True, landmarks=False, text=False, normals=False):
         count = self.landmarks.shape[0]

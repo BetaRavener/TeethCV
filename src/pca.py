@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class PCA(object):
     mean = None
     eigen_values = None
@@ -17,6 +16,9 @@ class PCA(object):
 
     def project(self, X):
         return np.dot(X - self.mean, self.eigen_vectors)
+
+    def get_allowed_deviation(self):
+        return 2 * np.sqrt(self.eigen_values)
 
     @staticmethod
     def reconstruct(W, Y, mu=None):

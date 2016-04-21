@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from scipy.spatial.distance import mahalanobis
 
 from src.datamanager import DataManager
 from src.sampler import Sampler
@@ -13,7 +14,17 @@ class ActiveShapeModel(object):
     pca = None
     means_points_model = []
     inverse_covariance_points_model = []
-    knobs = None
+
+    current_model = None
+
+    # Model parameters
+    k = 4
+    m = 9
+    b = None
+    scale = 10
+    rotation = 0
+    position = (0,0)
+
 
     def __init__(self, _data_manager, image, pca):
         assert isinstance(_data_manager, DataManager)
@@ -33,7 +44,7 @@ class ActiveShapeModel(object):
             for tooth in radiograph.teeth:
                 assert isinstance(tooth, Tooth)
                 # Get samples (40, X), where X is number 2*number_of_samples
-                sample_matrix = Sampler.sample(tooth, radiograph.image, 4)
+                sample_matrix = Sampler.sample(tooth, radiograph.image, self.k)
                 if derivative == True:
                     # TODO maybe absolute values will be necessary
                     sample_matrix = self._compute_derivative(sample_matrix)
@@ -53,7 +64,46 @@ class ActiveShapeModel(object):
         assert len(self.means_points_model) == len(self.inverse_covariance_points_model)
 
     def _initialize_model(self):
-        self.knobs = np.zeros(self.pca.eigen_values.shape)
+        self.b = np.zeros(self.pca.eigen_values.shape)
+        self.current_model = Tooth(self.pca.mean.reshape((self.pca.mean.size / 2, 2)))
+        self.mean_tooth = Tooth(self.pca.mean.reshape((self.pca.mean.size / 2, 2)))
+
+
+    def make_step(self):
+        return_positions = []
+        # Get sample ()
+        sample_matrix = Sampler.sample(self.current_model, self.image, self.m, return_positions)
+        for i, sampled_profile in enumerate(sample_matrix):
+            position = self._find_best_position(sampled_profile, i)
+            self.current_model.landmarks[i] = return_positions[i][position]
+        self.position, self.scale, self.rotation =  self.current_model.align(self.mean_tooth)
+        self.b = self.pca.project(self.current_model.landmarks)
+        max_deviations = self.pca.get_allowed_deviation()
+        for i in range(0, self.b.shape[0]):
+            self.b[i] = min(max(self.b[i], -max_deviations[i]), max_deviations[i])
+        # Reconstruct shape
+        new_shape = self.pca.reconstruct(self.b)
+
+
+    def _find_best_position(self, sampled_profile, point_index):
+        '''
+
+        :param sampled_profile: Length 2m + 1
+        :param model: Length 2k + 1
+        :return:
+        '''
+        model_length = len(self.means_points_model[point_index])
+        sampled_profile_length = len(sampled_profile)
+        min_value = float("inf")
+        min_index = 0
+        for i in range(0, sampled_profile_length - model_length + 1):
+            sampled_profile_part = sampled_profile[i:i+model_length]
+            distance = mahalanobis(sampled_profile_part, self.means_points_model[point_index], self.inverse_covariance_points_model[point_index] )
+            if distance < min_value:
+                min_value = distance
+                min_index = i
+        return self.k + min_index
+
 
 
     def _compute_derivative(self, samples):

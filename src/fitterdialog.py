@@ -223,3 +223,4 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     def _create_appearance_models(self):
         self.active_shape_model = ActiveShapeModel(self.data_manager, self.image, self.pca)
         self.active_shape_model.create_appearance_model()
+        self.active_shape_model.make_step()
