@@ -18,7 +18,7 @@ class PCA(object):
         return np.dot(X - self.mean, self.eigen_vectors)
 
     def get_allowed_deviation(self):
-        return 2 * np.sqrt(self.eigen_values)
+        return 3 * np.sqrt(self.eigen_values)
 
     @staticmethod
     def reconstruct(W, Y, mu=None):
@@ -36,10 +36,10 @@ class PCA(object):
         mu = X.mean(axis=0)
         X = X - mu
         if n > d:
-            C = np.dot(X.T, X)
+            C = np.dot(X.T, X) / (X.shape[0] - 1)
             [eigenvalues, eigenvectors] = np.linalg.eigh(C)
         else:
-            C = np.dot(X, X.T)
+            C = np.dot(X, X.T) / (X.shape[1] - 1)
             [eigenvalues, eigenvectors] = np.linalg.eigh(C)
             eigenvectors = np.dot(X.T, eigenvectors)
             for i in xrange(n):

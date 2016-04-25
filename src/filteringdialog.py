@@ -50,7 +50,6 @@ class FilteringDialog(QDialog, Ui_Dialog):
         grad_x = cv2.Scharr(img, cv2.CV_64F, 1, 0) /16
         grad_y = cv2.Scharr(img, cv2.CV_64F, 0, 1) /16
         grad = np.sqrt(grad_x ** 2 + grad_y ** 2)
-        grad = cv2.normalize(grad, alpha=0, beta=255, norm_type=cv2.cv.CV_MINMAX)
         return grad
 
     def _perform_fft(self, img):

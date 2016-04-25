@@ -9,19 +9,19 @@ class Sampler(object):
     def _find_sample_positions(center_point, normal, sample_count):
         positive_samples = list()
         negative_samples = list()
-        center_point_tuple = tuple(center_point)
+        center_point_tuple = tuple(center_point.astype(np.int32))
 
         scale = 0
         while len(positive_samples) < sample_count:
             scale += 0.5
-            sample_point = tuple(np.floor(center_point + normal * scale))
+            sample_point = tuple(np.floor(center_point + normal * scale).astype(np.int32))
             if sample_point not in positive_samples and sample_point != center_point_tuple:
                 positive_samples.append(sample_point)
 
         scale = 0
         while len(negative_samples) < sample_count:
             scale -= 0.5
-            sample_point = tuple(np.floor(center_point + normal * scale))
+            sample_point = tuple(np.floor(center_point + normal * scale).astype(np.int32))
             if sample_point not in negative_samples and sample_point != center_point_tuple:
                 negative_samples.append(sample_point)
 
@@ -38,10 +38,10 @@ class Sampler(object):
             else:
                 samples.append(image[position[1], position[0]])
 
-        return samples
+        return np.array(samples)
 
     @staticmethod
-    def sample(tooth, radiograph_image, sample_count, return_positions=None):
+    def sample(tooth, radiograph_image, sample_count, normalize=False, return_positions=None):
         assert isinstance(tooth, Tooth)
         assert isinstance(radiograph_image, np.ndarray)
 
@@ -50,7 +50,13 @@ class Sampler(object):
         for i, center_point in enumerate(tooth.landmarks):
             normal = tooth.normals[i]
             positions = Sampler._find_sample_positions(center_point, normal, sample_count)
-            result[i] = Sampler._sample_image(radiograph_image, positions)
+            samples = Sampler._sample_image(radiograph_image, positions)
+            # Normalize samples (according to paper, this is 1 over sum of absolute values of samples)
+            samples = samples.astype(np.float64)
+            abs_sum = np.sum(np.abs(samples))
+            if normalize and not np.isclose(abs_sum, 0):
+                samples /= abs_sum
+            result[i] = samples
             if return_positions is not None:
                 return_positions.append(positions)
 

@@ -3,10 +3,10 @@ from PyQt5.QtGui import QColor, QBrush, QFont, QPen
 from PyQt5.QtWidgets import QGraphicsSimpleTextItem
 import math
 
-from src.utils import line_normal
+from src.utils import line_normal, create_rotation_matrix
 
 
-class Tooth:
+class Tooth(object):
     landmarks = None
     _centroid = None
     _normals = None
@@ -54,6 +54,7 @@ class Tooth:
         """
         Uses procrustes analysis to align this shape to the other.
         :param other: Object to which this one should align. Must be at origin and unit sized.
+        :returns Translation vector, scale factor and angle by which can be aligned shape transformed to its original.
         """
         translation = self.centroid
         self.move_to_origin()
@@ -67,18 +68,14 @@ class Tooth:
         bottom_sum = np.sum(w * x + z * y)
         angle = math.atan(top_sum / bottom_sum)
 
-        rot_matrix = np.array([[np.cos(angle), -np.sin(angle)],
-                               [np.sin(angle), np.cos(angle)]])
-
-        self.landmarks = self.landmarks.dot(rot_matrix)
+        self.rotate(angle)
         return translation, scale, -angle
 
     def move_to_origin(self):
         """
         Moves all landmarks so that centroid is at the origin (0,0)
         """
-        self.landmarks = self.landmarks - self.centroid
-        self._centroid = None
+        self.translate(-self.centroid)
 
     def normalize_shape(self):
         """
@@ -94,9 +91,29 @@ class Tooth:
         # Divide by number of elements and get square root
         scaling_factor = np.sqrt(scaling_factor / self.landmarks.size)
 
-        self.landmarks *= 1 / scaling_factor
-        self._normals = None
+        self.scale(1 / scaling_factor)
         return scaling_factor
+
+    def rotate(self, angle):
+        rot_matrix = create_rotation_matrix(angle)
+        self.landmarks = self.landmarks.dot(rot_matrix)
+        self._normals = None
+
+    def scale(self, factor):
+        self.landmarks *= factor
+        self._normals = None
+
+    def translate(self, vec):
+        self.landmarks = self.landmarks + vec
+        self._centroid = None
+
+    def transform(self, translation_vector, scale_factor, rotation_angle):
+        """
+        Performs rotation, scaling and translation (in this order)
+        """
+        self.rotate(rotation_angle)
+        self.scale(scale_factor)
+        self.translate(translation_vector)
 
     def draw(self, scene, outline=True, landmarks=False, text=False, normals=False):
         count = self.landmarks.shape[0]

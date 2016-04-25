@@ -73,31 +73,57 @@
         </layout>
        </item>
        <item>
-        <widget class="QPushButton" name="filterButton">
-         <property name="text">
-          <string>Filter Image</string>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="detectEdgesButton">
-         <property name="text">
-          <string>Detect Edges</string>
+         <property name="title">
+          <string>Active shape model</string>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="animateButton">
-         <property name="text">
-          <string>Animate</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="fitButton">
-         <property name="text">
-          <string>Fit</string>
-         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QPushButton" name="stepButton">
+            <property name="text">
+             <string>Step</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="animateButton">
+            <property name="text">
+             <string>Animate</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="fitButton">
+            <property name="text">
+             <string>Fit</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="paramsScrollArea">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="paramsScrollAreaContents">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>363</width>
+               <height>139</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_4"/>
+            </widget>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>

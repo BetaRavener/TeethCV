@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\trainer.ui'
 #
-# Created: Tue Apr 19 15:29:32 2016
+# Created: Sun Apr 24 21:40:25 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -49,7 +49,7 @@ class Ui_Trainer(object):
         self.thresholdSpinBox.setDecimals(3)
         self.thresholdSpinBox.setMaximum(1.0)
         self.thresholdSpinBox.setSingleStep(0.01)
-        self.thresholdSpinBox.setProperty("value", 0.99)
+        self.thresholdSpinBox.setProperty("value", 0.9)
         self.thresholdSpinBox.setObjectName("thresholdSpinBox")
         self.horizontalLayout_3.addWidget(self.thresholdSpinBox)
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)

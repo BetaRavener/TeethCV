@@ -10,6 +10,7 @@ from gui.pcavisualizer import Ui_PcaVisualizerDialog
 from src.datamanager import DataManager
 from src.pca import PCA
 from src.tooth import Tooth
+from src.utils import to_landmarks_format
 
 
 class PcaVisualizerDialog(QDialog, Ui_PcaVisualizerDialog):
@@ -36,12 +37,12 @@ class PcaVisualizerDialog(QDialog, Ui_PcaVisualizerDialog):
         self.graphicsView.setScene(self.scene)
 
         self._scales = np.empty(self.pca.eigen_values.shape)
-        for i, eig_val in enumerate(self.pca.eigen_values):
+        for i, deviation in enumerate(self.pca.get_allowed_deviation()):
             slider = QSlider(Qt.Horizontal, self.scrollAreaWidgetContents)
             slider.setRange(-self.slider_resolution, self.slider_resolution)
             slider.valueChanged.connect(self.slider_moved)
             self.scrollAreaWidgetContents.layout().addWidget(slider)
-            self._scales[i] = 2 * math.sqrt(eig_val) / self.slider_resolution
+            self._scales[i] = deviation / self.slider_resolution
 
         self.resetButton.clicked.connect(self.reset)
 
@@ -77,7 +78,7 @@ class PcaVisualizerDialog(QDialog, Ui_PcaVisualizerDialog):
 
     def set_from_projection(self, idx):
         tooth = self.data_manager.get_tooth_from_all(idx, True)
-        mean_tooth = Tooth(self.pca.mean.reshape((self.pca.mean.size / 2, 2)))
+        mean_tooth = Tooth(to_landmarks_format(self.pca.mean))
         tooth.align(mean_tooth)
         data = tooth.landmarks.flatten()
         params = self.pca.project(data)
@@ -101,8 +102,7 @@ class PcaVisualizerDialog(QDialog, Ui_PcaVisualizerDialog):
         return self.pca.reconstruct(params)
 
     def _redraw(self, original_tooth=None):
-        landmarks = self.combined.reshape((self.combined.size / 2, 2))
-        tooth = Tooth(landmarks)
+        tooth = Tooth(to_landmarks_format(self.combined))
 
         self.scene.clear()
 

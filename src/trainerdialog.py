@@ -9,6 +9,7 @@ from gui.trainer import Ui_Trainer
 from src.datamanager import DataManager
 from src.pca import PCA
 from src.tooth import Tooth
+from src.utils import to_landmarks_format
 
 
 class TrainerDialog(QDialog, Ui_Trainer):
@@ -106,20 +107,23 @@ class TrainerDialog(QDialog, Ui_Trainer):
 
             mean_shape = new_mean_shape
 
-        data = np.zeros((112, 80))
+        # Realign all teeth with final mean shape
+        for i in range(0, len(teeth)):
+            teeth[i].align(mean_shape)
+
+        data = np.zeros((len(teeth), teeth[0].landmarks.size))
         for i, tooth in enumerate(teeth):
             data[i, :] = tooth.landmarks.flatten()
 
         self.pca = PCA()
         self.pca.train(deepcopy(data))
         self.pca.threshold(self.thresholdSpinBox.value())
-
         self._show_training_result()
 
         self.trained.emit(self.pca)
 
     def _show_training_result(self):
-        mean_tooth = Tooth(self.pca.mean.reshape((self.pca.mean.size / 2, 2)))
+        mean_tooth = Tooth(to_landmarks_format(self.pca.mean))
         test_tooth = self.data_manager.get_tooth(0, 0, True)
         test_tooth.align(mean_tooth)
 
@@ -132,7 +136,7 @@ class TrainerDialog(QDialog, Ui_Trainer):
 
         self.scene.clear()
         for i, shape in enumerate(shapes):
-            tooth = Tooth(shape.reshape((shape.size / 2, 2)))
+            tooth = Tooth(to_landmarks_format(shape))
             r, g, b = colors[i]
             tooth.outline_pen = QPen(QColor.fromRgb(r, g, b))
             tooth.outline_pen.setWidthF(0.02)

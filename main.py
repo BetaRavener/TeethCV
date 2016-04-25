@@ -62,7 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pcaVisualizerButton.setEnabled(False)
         self.pcaVisualizerButton.clicked.connect(self.open_pca_visulalizer)
 
-        #self.fitterButton.setEnabled(False)
+        self.fitterButton.setEnabled(False)
         self.fitterButton.clicked.connect(self.open_fitter)
 
     def open_trainer(self):

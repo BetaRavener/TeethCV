@@ -1,29 +1,34 @@
 import random
+from copy import deepcopy
 from time import sleep
 
 import cv2
 import numpy as np
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QColor, QPainter, QPixmap, QPen, QBrush
-from PyQt5.QtWidgets import QDialog, QFileDialog, QGraphicsSceneMouseEvent
+from PyQt5.QtWidgets import QDialog, QFileDialog, QGraphicsSceneMouseEvent, QSlider
 
 from gui.fitterdialog import Ui_fitterDialog
 from src.ActiveShapeModel import ActiveShapeModel
 from src.datamanager import DataManager
+from src.filter import Filter
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
+from src.sampler import Sampler
+from src.tooth import Tooth
 from src.utils import toQImage
 from src.pca import PCA
 
-class Animator(QThread):
-    output_signal = pyqtSignal(QImage)
-    exiting = False
-    stars = None
-    width = None
-    height = None
 
-    def __init__(self):
+# TODO: Animator should only inform that ActiveShapeModel has changed
+class Animator(QThread):
+    output_signal = pyqtSignal(Tooth)
+    exiting = False
+    active_shape_model = None
+
+    def __init__(self, asm):
         super(Animator, self).__init__()
+        self.active_shape_model = asm
 
     def __del__(self):
         # Notify worker that it's being destroyed so it can stop
@@ -34,29 +39,12 @@ class Animator(QThread):
         # thread environment has been set up.
 
         random.seed()
-        n = self.stars
 
-        while not self.exiting and n > 0:
-            image = QImage(self.width, self.height,
-                           QImage.Format_ARGB32)
-            image.fill(QColor.fromRgb(0, 0, 0, 0))
+        # TODO: Convergence
+        while not self.exiting:
+            self.active_shape_model.make_step()
 
-            painter = QPainter()
-            painter.begin(image)
-            painter.setPen(QPen(QColor.fromRgb(255, 0, 0)))
-            # TODO: The active shape model should have a function "make step"
-            # TODO: so that this one can animate the steps
-            painter.drawLine(0, n, self.width, self.height)
-            painter.end()
-
-            self.output_signal.emit(image)
-            n -= 1
-            sleep(0.1)
-
-    def render(self, size, stars):
-        self.width, self.height = size
-        self.stars = stars
-        self.start()
+            self.output_signal.emit(deepcopy(self.active_shape_model.current_tooth))
 
     def stop(self):
         self.exiting = True
@@ -68,12 +56,22 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     animator = None
     data_manager = None
     current_scale = 0
-    animation_overlay = None
-    indicator_position = None
-    indicator = None
-    image = None
+    _image = None
     active_shape_model = None
     pca = None
+
+    slider_resolution = 1000
+    _scales = None
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, img):
+        self._image = Filter.crop_image(img)
+        self._image = Filter.process_image(self._image)
+        self.active_shape_model.image = self._image
 
     def __init__(self, data_manager, pca):
         super(FitterDialog, self).__init__()
@@ -83,14 +81,13 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         assert isinstance(data_manager, DataManager)
         self.data_manager = data_manager
         self.pca = pca
+        self.active_shape_model = ActiveShapeModel(self.data_manager, self.pca)
 
         self.scene = InteractiveGraphicsScene()
         self.graphicsView.setScene(self.scene)
-        self.scene.clicked.connect(self._set_indicator)
+        self.scene.clicked.connect(self._set_position)
 
         self.image = self.data_manager.radiographs[0].image
-        self._crop_image()
-        self.display_image()
 
         self.openButton.clicked.connect(self._open_radiograph)
 
@@ -99,20 +96,23 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.zoomSlider.setValue(self.current_scale)
         self.zoomSlider.valueChanged.connect(self.change_scale)
 
-        self.filterButton.clicked.connect(self._filter_image)
-        self.detectEdgesButton.clicked.connect(self._detect_edges)
-        self.animateButton.clicked.connect(self._normalize)
-        self.fitButton.clicked.connect(self._create_appearance_models)
+        self.stepButton.clicked.connect(self._perform_one_step_asm)
+        self.animateButton.clicked.connect(self._animator_entry)
+        self.fitButton.clicked.connect(self._perform_full_asm)
 
+        self._scales = np.empty(self.pca.eigen_values.shape)
+        for i, deviation in enumerate(self.pca.get_allowed_deviation()):
+            slider = QSlider(Qt.Horizontal, self.paramsScrollAreaContents)
+            slider.setRange(-self.slider_resolution, self.slider_resolution)
+            # slider.valueChanged.connect(self.slider_moved)
+            self.paramsScrollAreaContents.layout().addWidget(slider)
+            self._scales[i] = deviation / self.slider_resolution
 
-    def _crop_image(self):
-        h, w = self.image.shape
-        h2, w2 = h/2, w/2
-        self.image = self.image[500:1400, w2 - 400:w2 + 400].copy()
+        self._redraw(self.active_shape_model.current_tooth)
 
-    def _normalize(self):
-        self.image = (self.image / self.image.max()) * 255
-        self.display_image()
+    def closeEvent(self, event):
+        if self.animator is not None:
+            self.animator.stop()
 
     def _open_radiograph(self):
         file_dialog = QFileDialog(self)
@@ -120,11 +120,12 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         file_dialog.setFileMode(QFileDialog.ExistingFile)
         file_dialog.setNameFilter("Radiograph (*.tif)")
         if file_dialog.exec_() and len(file_dialog.selectedFiles()) == 1:
+            if self.animator is not None:
+                self.animator.stop()
             radiograph = Radiograph()
             radiograph.path_to_img = file_dialog.selectedFiles()[0]
             self.image = radiograph.image
-            self._crop_image()
-            self.display_image()
+            self._redraw(self.active_shape_model.current_tooth)
 
     def change_scale(self, scale):
         self.current_scale = scale
@@ -132,21 +133,11 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         real_scale = 1 + scale * (0.1 if scale >= 0 else 0.05)
         self.graphicsView.scale(real_scale, real_scale)
 
-    def _set_indicator(self, mouse_event):
+    def _set_position(self, mouse_event):
         assert isinstance(mouse_event, QGraphicsSceneMouseEvent)
         pos = mouse_event.scenePos()
-        self.indicator_position = (pos.x(), pos.y())
-        self._redraw_indicator()
-
-    def _redraw_indicator(self):
-        if self.indicator is not None:
-            self.scene.removeItem(self.indicator)
-
-        self.indicator = self.scene.addEllipse(self.indicator_position[0] - 5, self.indicator_position[1] - 5,
-                                               10, 10,
-                                               pen=QPen(QColor.fromRgb(255, 0, 0)),
-                                               brush=QBrush(QColor.fromRgb(255, 0, 0)))
-        self.scene.update()
+        self.active_shape_model.set_up((pos.x(), pos.y()), 50)
+        self._redraw(self.active_shape_model.current_tooth)
 
     def _animator_entry(self):
         if self.animator is None:
@@ -157,70 +148,72 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     def _animation_start(self):
         self._disable_ui()
 
-        self.animator = Animator()
+        self.animator = Animator(self.active_shape_model)
         self.animator.finished.connect(self._animator_end)
-        self.animator.output_signal.connect(self._update_image)
+        self.animator.output_signal.connect(self.update_animation)
 
-        self.animator.render((self.scene.width(), self.scene.height()), 100)
+        self.animator.start()
 
     def _animator_end(self):
         self.animateButton.setText("Animate")
         self.animator = None
+        self.stepButton.setEnabled(True)
         self.fitButton.setEnabled(True)
+        self.scene.setEnabled(True)
 
     def _disable_ui(self):
         self.animateButton.setText("Stop")
+        self.stepButton.setEnabled(False)
         self.fitButton.setEnabled(False)
+        self.scene.setEnabled(False)
 
-    def _update_image(self, image):
-        if self.animation_overlay is not None:
-            self.scene.removeItem(self.animation_overlay)
+    def update_animation(self, tooth):
+        self._set_sliders_from_params(self.active_shape_model.current_params)
+        self._redraw(tooth)
 
-        pixmap = QPixmap()
-        pixmap = pixmap.fromImage(image)
-        self.animation_overlay = self.scene.addPixmap(pixmap)
-        self.animation_overlay.setPos(0, 0)
-        self.scene.update()
-
-    def _focus_view(self):
-        rect = self.scene.itemsBoundingRect()
-        self.scene.setSceneRect(rect)
-        self.graphicsView.fitInView(rect, Qt.KeepAspectRatio)
-
-    def display_image(self):
+    def _redraw(self, tooth, normalize=True, show_sampled_positions=False):
         self.scene.clear()
-        self.animation_overlay = None
-        self.indicator_position = None
-        self.indicator = None
 
-        # Load and draw image
-        img = toQImage(self.image.astype(np.uint8))
+        img = self.image.copy()
+
+        # Draw sampled possitions to image
+        if show_sampled_positions and tooth is not None:
+            img_max = img.max()
+            all_sample_positions = []
+            Sampler.sample(tooth, img, self.active_shape_model.m, False, all_sample_positions)
+            for point_sample_positions in all_sample_positions:
+                for x, y in point_sample_positions:
+                    img[y, x] = img_max
+
+        # Draw image
+        if normalize:
+            img = (img / img.max()) * 255
+        img = toQImage(img.astype(np.uint8))
         self.scene.addPixmap(QPixmap.fromImage(img))
 
-        # Set generated scene into the view
-        self.graphicsView.resetTransform()
-        self.graphicsView.centerOn(self.scene.width() / 2, self.scene.height() / 2)
-        self.current_scale = 0
-        self.zoomSlider.setValue(0)
+        # Draw tooth from active shape model
+        if tooth is not None:
+            tooth.draw(self.scene, True, True)
 
-    def _filter_image(self):
-        self.image = cv2.medianBlur(self.image, 5)
-        self.image = cv2.bilateralFilter(self.image, 17, 9, 200)
-        self.display_image()
-
-    def _detect_scharr(self):
-        grad_x = cv2.Scharr(self.image, cv2.CV_64F, 1, 0) / 16
-        grad_y = cv2.Scharr(self.image, cv2.CV_64F, 0, 1) / 16
-        grad = np.sqrt(grad_x ** 2 + grad_y ** 2)
-        self.image = grad
-
-    def _detect_edges(self):
-        # Sobel
-        self._detect_scharr()
-
-        self.display_image()
-
-    def _create_appearance_models(self):
-        self.active_shape_model = ActiveShapeModel(self.data_manager, self.image, self.pca)
-        self.active_shape_model.create_appearance_model()
+    def _perform_one_step_asm(self):
         self.active_shape_model.make_step()
+        self.update_animation(deepcopy(self.active_shape_model.current_tooth))
+
+    def _perform_full_asm(self):
+        pass
+
+    def _get_all_sliders(self):
+        sliders = list()
+        for i in range(0, self.paramsScrollAreaContents.layout().count()):
+            item = self.paramsScrollAreaContents.layout().itemAt(i).widget()
+            if isinstance(item, QSlider):
+                sliders.append(item)
+
+        return sliders
+
+    def _set_sliders_from_params(self, params):
+        slider_values = params / self._scales
+        self.ignore_sliders = True
+        for i, slider in enumerate(self._get_all_sliders()):
+            slider.setValue(int(slider_values[i]))
+        self.ignore_sliders = False

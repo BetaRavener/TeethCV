@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\fitterdialog.ui'
 #
-# Created: Tue Apr 19 15:29:32 2016
+# Created: Sun Apr 24 21:40:25 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -43,18 +43,31 @@ class Ui_fitterDialog(object):
         self.zoomSlider.setObjectName("zoomSlider")
         self.horizontalLayout_4.addWidget(self.zoomSlider)
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
-        self.filterButton = QtWidgets.QPushButton(fitterDialog)
-        self.filterButton.setObjectName("filterButton")
-        self.verticalLayout_2.addWidget(self.filterButton)
-        self.detectEdgesButton = QtWidgets.QPushButton(fitterDialog)
-        self.detectEdgesButton.setObjectName("detectEdgesButton")
-        self.verticalLayout_2.addWidget(self.detectEdgesButton)
-        self.animateButton = QtWidgets.QPushButton(fitterDialog)
+        self.groupBox = QtWidgets.QGroupBox(fitterDialog)
+        self.groupBox.setMinimumSize(QtCore.QSize(0, 0))
+        self.groupBox.setObjectName("groupBox")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.stepButton = QtWidgets.QPushButton(self.groupBox)
+        self.stepButton.setObjectName("stepButton")
+        self.verticalLayout_3.addWidget(self.stepButton)
+        self.animateButton = QtWidgets.QPushButton(self.groupBox)
         self.animateButton.setObjectName("animateButton")
-        self.verticalLayout_2.addWidget(self.animateButton)
-        self.fitButton = QtWidgets.QPushButton(fitterDialog)
+        self.verticalLayout_3.addWidget(self.animateButton)
+        self.fitButton = QtWidgets.QPushButton(self.groupBox)
         self.fitButton.setObjectName("fitButton")
-        self.verticalLayout_2.addWidget(self.fitButton)
+        self.verticalLayout_3.addWidget(self.fitButton)
+        self.paramsScrollArea = QtWidgets.QScrollArea(self.groupBox)
+        self.paramsScrollArea.setWidgetResizable(True)
+        self.paramsScrollArea.setObjectName("paramsScrollArea")
+        self.paramsScrollAreaContents = QtWidgets.QWidget()
+        self.paramsScrollAreaContents.setGeometry(QtCore.QRect(0, 0, 363, 139))
+        self.paramsScrollAreaContents.setObjectName("paramsScrollAreaContents")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.paramsScrollAreaContents)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.paramsScrollArea.setWidget(self.paramsScrollAreaContents)
+        self.verticalLayout_3.addWidget(self.paramsScrollArea)
+        self.verticalLayout_2.addWidget(self.groupBox)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem1)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -75,8 +88,8 @@ class Ui_fitterDialog(object):
         fitterDialog.setWindowTitle(_translate("fitterDialog", "Dialog"))
         self.openButton.setText(_translate("fitterDialog", "Open"))
         self.label.setText(_translate("fitterDialog", "Zoom"))
-        self.filterButton.setText(_translate("fitterDialog", "Filter Image"))
-        self.detectEdgesButton.setText(_translate("fitterDialog", "Detect Edges"))
+        self.groupBox.setTitle(_translate("fitterDialog", "Active shape model"))
+        self.stepButton.setText(_translate("fitterDialog", "Step"))
         self.animateButton.setText(_translate("fitterDialog", "Animate"))
         self.fitButton.setText(_translate("fitterDialog", "Fit"))
 

@@ -34,3 +34,29 @@ def line_normal(pt1, pt2):
     vec = (pt1 - pt2)
     # Swap coordinates and negate one of them to find normal
     return vec[1], -vec[0]
+
+
+def to_landmarks_format(vec):
+    return vec.reshape(vec.size / 2, 2)
+
+
+def create_rotation_matrix(angle):
+    return np.array([[np.cos(angle), -np.sin(angle)],
+                     [np.sin(angle), np.cos(angle)]])
+
+
+class Rectangle:
+    top = None
+    bottom = None
+    left = None
+    right = None
+
+    def __init__(self, left, top, right, bottom):
+        self.top = top
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+
+    @property
+    def left_top(self):
+        return np.array((self.left, self.top))
