@@ -8,33 +8,75 @@ from src.tooth import Tooth
 
 
 class LandmarkModel(object):
-    data_manager = None
+    radiograph_samples = None
+    k = None
+    m = None
+    normalize = None
 
-    def __init__(self, data_manager):
-        self.data_manager = data_manager
+    def __init__(self, k=10, m=30, normalize=True):
+        self.radiograph_samples = list()
+        self.k = k
+        self.m = m
+        self.normalize = normalize
 
-    def _get_samples_across_radiographs(self, count):
-        radiograph_samples = []
-        for radiograph in self.data_manager.radiographs:
+    def add_training_data(self, teeth, image):
+        '''
+        Adds another set of training data to model. The teeth must be already aligned in the image.
+        :param teeth: List of teeth.
+        :param image: Image that will be sampled.
+        '''
+        for i, tooth in enumerate(teeth):
+            # Make a copy so the original in data manager is not modified
+            tooth = deepcopy(tooth)
+            assert isinstance(tooth, Tooth)
+            # Get samples (40, X), where X is number 2*number_of_samples+1
+            sample_matrix = Sampler.sample(tooth, image, self.k, self.normalize)
+            self.radiograph_samples.append(sample_matrix)
+            print "Sampling tooth %d done" % (i+1)
+
+    def finish_training(self):
+        '''
+        Finishes the training by creating the actual model from previously supplied data.
+        '''
+        pass
+
+    def update_positions(self, tooth, image):
+        '''
+        Updates landmark positions of tooth to be in best alignment with the image.
+        :param tooth: Tooth with original landmarks.
+        :param image: Image that will be sampled for finding new landmark positions. It must be already preprocessed.
+        :return: New tooth with updated landmarks.
+        '''
+        # Sample along normals and find best new position for points by comparing with trained model
+        return_positions = []
+        new_landmarks = []
+        sample_matrix = Sampler.sample(tooth, image, self.m, self.normalize, return_positions)
+        for i, sampled_profile in enumerate(sample_matrix):
+            position = self._find_best_position(sampled_profile, i)
+            new_landmarks.append(return_positions[i][position])
+
+        return Tooth(np.array(new_landmarks))
+
+    #TODO: Remove in next version
+    def old_training(self, data_manager):
+        for radiograph in data_manager.radiographs:
             # Pre-process the image
             img = radiograph.image
             cropping_region = Filter.get_cropping_region(img)
             img = Filter.crop_image(img)
             img = Filter.process_image(img)
 
-            for tooth in radiograph.teeth:
-                # Make a copy so the original in data manager is not modified
-                tooth = deepcopy(tooth)
-                assert isinstance(tooth, Tooth)
-                # Translate landmarks into the cropped region
+            # Create copy of data
+            teeth = deepcopy(radiograph.teeth)
+            # Translate landmarks into the cropped region
+            for tooth in teeth:
                 tooth.translate(-cropping_region.left_top)
-                # Get samples (40, X), where X is number 2*number_of_samples+1
-                sample_matrix = Sampler.sample(tooth, img, count, True)
-                radiograph_samples.append(sample_matrix)
 
-        return np.array(radiograph_samples)
+            self.add_training_data(teeth, img)
 
-    def find_best_position(self, sampled_profile, point_index):
+        self.finish_training()
+
+    def _find_best_position(self, sampled_profile, point_index):
         pass
 
     @staticmethod

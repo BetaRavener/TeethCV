@@ -73,6 +73,27 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Sampling Level</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="levelSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="minimumSize">
           <size>
@@ -116,7 +137,7 @@
                <x>0</x>
                <y>0</y>
                <width>363</width>
-               <height>139</height>
+               <height>120</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4"/>

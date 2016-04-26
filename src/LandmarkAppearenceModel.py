@@ -3,7 +3,7 @@ from scipy.spatial.distance import mahalanobis
 
 from src.LandmarkModel import LandmarkModel
 
-
+# TODO: Outdated. If gonna be used, needs to be updated to comply with new LandmarkModel class.
 class LandmarkAppearanceModel(LandmarkModel):
     means_points_model = None
     inverse_covariance_points_model = None

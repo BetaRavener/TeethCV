@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\fitterdialog.ui'
 #
-# Created: Sun Apr 24 21:40:25 2016
+# Created: Tue Apr 26 22:24:42 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -43,6 +43,17 @@ class Ui_fitterDialog(object):
         self.zoomSlider.setObjectName("zoomSlider")
         self.horizontalLayout_4.addWidget(self.zoomSlider)
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setContentsMargins(-1, 10, -1, -1)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label_2 = QtWidgets.QLabel(fitterDialog)
+        self.label_2.setObjectName("label_2")
+        self.horizontalLayout_3.addWidget(self.label_2)
+        self.levelSlider = QtWidgets.QSlider(fitterDialog)
+        self.levelSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.levelSlider.setObjectName("levelSlider")
+        self.horizontalLayout_3.addWidget(self.levelSlider)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
         self.groupBox = QtWidgets.QGroupBox(fitterDialog)
         self.groupBox.setMinimumSize(QtCore.QSize(0, 0))
         self.groupBox.setObjectName("groupBox")
@@ -61,7 +72,7 @@ class Ui_fitterDialog(object):
         self.paramsScrollArea.setWidgetResizable(True)
         self.paramsScrollArea.setObjectName("paramsScrollArea")
         self.paramsScrollAreaContents = QtWidgets.QWidget()
-        self.paramsScrollAreaContents.setGeometry(QtCore.QRect(0, 0, 363, 139))
+        self.paramsScrollAreaContents.setGeometry(QtCore.QRect(0, 0, 363, 120))
         self.paramsScrollAreaContents.setObjectName("paramsScrollAreaContents")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.paramsScrollAreaContents)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
@@ -88,6 +99,7 @@ class Ui_fitterDialog(object):
         fitterDialog.setWindowTitle(_translate("fitterDialog", "Dialog"))
         self.openButton.setText(_translate("fitterDialog", "Open"))
         self.label.setText(_translate("fitterDialog", "Zoom"))
+        self.label_2.setText(_translate("fitterDialog", "Sampling Level"))
         self.groupBox.setTitle(_translate("fitterDialog", "Active shape model"))
         self.stepButton.setText(_translate("fitterDialog", "Step"))
         self.animateButton.setText(_translate("fitterDialog", "Animate"))

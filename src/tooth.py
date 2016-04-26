@@ -115,6 +115,18 @@ class Tooth(object):
         self.scale(scale_factor)
         self.translate(translation_vector)
 
+    def downsample_transform(self):
+        '''
+        Performs transform that should be applied to a tooth after downsampling image once
+        '''
+        self.scale(0.5)
+
+    def upsample_transform(self):
+        '''
+        Performs transform that should be applied to a tooth after upsampling image once
+        '''
+        self.scale(2)
+
     def draw(self, scene, outline=True, landmarks=False, text=False, normals=False):
         count = self.landmarks.shape[0]
 

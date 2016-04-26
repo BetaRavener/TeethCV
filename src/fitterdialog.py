@@ -4,12 +4,13 @@ from time import sleep
 
 import cv2
 import numpy as np
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QRectF
 from PyQt5.QtGui import QImage, QColor, QPainter, QPixmap, QPen, QBrush
 from PyQt5.QtWidgets import QDialog, QFileDialog, QGraphicsSceneMouseEvent, QSlider
 
 from gui.fitterdialog import Ui_fitterDialog
 from src.ActiveShapeModel import ActiveShapeModel
+from src.MultiresFramework import MultiResolutionFramework
 from src.datamanager import DataManager
 from src.filter import Filter
 from src.interactivegraphicsscene import InteractiveGraphicsScene
@@ -56,7 +57,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     animator = None
     data_manager = None
     current_scale = 0
-    _image = None
+    current_sampling_level = 0
     active_shape_model = None
     pca = None
 
@@ -65,13 +66,11 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
     @property
     def image(self):
-        return self._image
+        return self.active_shape_model.image
 
     @image.setter
     def image(self, img):
-        self._image = Filter.crop_image(img)
-        self._image = Filter.process_image(self._image)
-        self.active_shape_model.image = self._image
+        self.active_shape_model.image = img
 
     def __init__(self, data_manager, pca):
         super(FitterDialog, self).__init__()
@@ -91,10 +90,13 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
         self.openButton.clicked.connect(self._open_radiograph)
 
-        self.zoomSlider.setMinimum(-10)
-        self.zoomSlider.setMaximum(10)
+        self.zoomSlider.setRange(-10, 10)
         self.zoomSlider.setValue(self.current_scale)
         self.zoomSlider.valueChanged.connect(self.change_scale)
+
+        self.levelSlider.setRange(1, MultiResolutionFramework.levels_count)
+        self.levelSlider.setValue(self.current_sampling_level + 1)
+        self.levelSlider.valueChanged.connect(self.user_change_level)
 
         self.stepButton.clicked.connect(self._perform_one_step_asm)
         self.animateButton.clicked.connect(self._animator_entry)
@@ -129,14 +131,26 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
     def change_scale(self, scale):
         self.current_scale = scale
+        self.update_scale()
+
+    def user_change_level(self, sampling_level):
+        self.current_sampling_level = sampling_level - 1
+        self.active_shape_model.change_level(self.current_sampling_level)
+
+        self.update_scale()
+        self._redraw(self.active_shape_model.current_tooth)
+
+    def update_scale(self):
+        real_scale = 1 + self.current_scale * (0.1 if self.current_scale >= 0 else 0.05)
+        real_scale *= 2 ** self.current_sampling_level
         self.graphicsView.resetTransform()
-        real_scale = 1 + scale * (0.1 if scale >= 0 else 0.05)
         self.graphicsView.scale(real_scale, real_scale)
 
     def _set_position(self, mouse_event):
         assert isinstance(mouse_event, QGraphicsSceneMouseEvent)
         pos = mouse_event.scenePos()
-        self.active_shape_model.set_up((pos.x(), pos.y()), 50)
+        self.active_shape_model.set_up((pos.x(), pos.y()), 12 * (
+            2 ** (MultiResolutionFramework.levels_count - self.current_sampling_level - 1)))
         self._redraw(self.active_shape_model.current_tooth)
 
     def _animator_entry(self):
@@ -171,6 +185,10 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self._set_sliders_from_params(self.active_shape_model.current_params)
         self._redraw(tooth)
 
+    def _focus_view(self, size):
+        rect = QRectF(0, 0, size[0], size[1])
+        self.scene.setSceneRect(rect)
+
     def _redraw(self, tooth, normalize=True, show_sampled_positions=False):
         self.scene.clear()
 
@@ -188,12 +206,15 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         # Draw image
         if normalize:
             img = (img / img.max()) * 255
-        img = toQImage(img.astype(np.uint8))
-        self.scene.addPixmap(QPixmap.fromImage(img))
+        qimg = toQImage(img.astype(np.uint8))
+        self.scene.addPixmap(QPixmap.fromImage(qimg))
 
         # Draw tooth from active shape model
         if tooth is not None:
             tooth.draw(self.scene, True, True)
+
+        # Set generated scene into the view
+        self._focus_view((qimg.width(), qimg.height()))
 
     def _perform_one_step_asm(self):
         self.active_shape_model.make_step()

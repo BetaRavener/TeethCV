@@ -4,31 +4,29 @@ from src.LandmarkModel import LandmarkModel
 
 
 class LandmarkIntensityModel(LandmarkModel):
-    k = 10
+    means_points_model = None
 
-    def __init__(self, data_manager):
-        super(LandmarkIntensityModel, self).__init__(data_manager)
-        self._train()
-
-    def _train(self):
+    def __init__(self):
+        super(LandmarkIntensityModel, self).__init__()
         self.means_points_model = list()
 
-        radiograph_samples = self._get_samples_across_radiographs(self.k)
+    def finish_training(self):
+        radiograph_samples_arr = np.array(self.radiograph_samples)
 
         # Compute mean and inverse covariance matrix for every landmark point.
-        for i in range(0, radiograph_samples.shape[1]):
-            point_samples = radiograph_samples[:, i, :].T
+        for i in range(0, radiograph_samples_arr.shape[1]):
+            point_samples = radiograph_samples_arr[:, i, :].T
             mean, cov_mat = LandmarkModel._get_mean_and_covariance(point_samples)
             self.means_points_model.append(mean)
 
-    def find_best_position(self, sampled_profile, point_index):
+    def _find_best_position(self, sampled_profile, landmark_index):
         '''
-
-        :param sampled_profile: Length 2m + 1
-        :param model: Length 2k + 1
-        :return:
+        Finds best position of landmark by matching model profile to a new sampled profile.
+        :param sampled_profile: A sampled profile along landmark normal. Length 2m + 1.
+        :param landmark_index: Index of landmark.
+        :return: Index of sampled_profile where best match occurred when profiles were center-aligned.
         '''
-        model_vec = self.means_points_model[point_index]
+        model_vec = self.means_points_model[landmark_index]
         model_length = len(model_vec)
         sampled_profile_length = len(sampled_profile)
 
@@ -51,3 +49,13 @@ class LandmarkIntensityModel(LandmarkModel):
         assert isinstance(vec1, np.ndarray)
         assert isinstance(vec2, np.ndarray)
         return np.sum((vec1 - vec2) ** 2)
+
+    def load_from_file(self, name):
+        try:
+            self.means_points_model = np.load("./data/Trained/lim_%s.npy" % name)
+        except IOError:
+            return False
+        return True
+
+    def save_to_file(self, name):
+        np.save("./data/Trained/lim_%s.npy" % name, self.means_points_model)

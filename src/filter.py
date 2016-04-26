@@ -24,8 +24,8 @@ class Filter:
         return image[region.top:region.bottom, region.left:region.right].copy()
 
     @staticmethod
-    def process_image(image):
-        image = cv2.medianBlur(image, 5)
-        image = cv2.bilateralFilter(image, 17, 9, 200)
+    def process_image(image, median_kernel=5, bilateral_kernel=17, bilateral_color=9):
+        image = cv2.medianBlur(image, median_kernel)
+        image = cv2.bilateralFilter(image, bilateral_kernel, bilateral_color, 200)
         image = Filter._scharr(image)
         return image
