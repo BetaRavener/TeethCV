@@ -50,6 +50,27 @@ class Tooth(object):
 
         return np.sum((self.landmarks - other.landmarks) ** 2)
 
+    def measure_error(self, other):
+        '''
+        Measures error between this and other shape. It can be used for comparing with correct shape during Leave one
+        out analysis etc. In that case this should be the correct one.
+        :param other: Shape for which the error against this one should be found.
+        :return: Average distance between shapes normalized by the size of correct shape. The size is calculated as
+                 average of distances from centroid.
+        '''
+
+        # Center landmarks
+        correct_landmarks = self.landmarks - self.centroid
+        found_landmarks = other.landmarks - other.centroid
+
+        differences = np.linalg.norm(found_landmarks - correct_landmarks, axis=1)
+        distances = np.linalg.norm(correct_landmarks, axis=1)
+
+        return np.average(differences) / np.average(distances)
+
+
+        np.linalg.norm(predicted - actual_points, 2) / np.linalg.norm(actual_points, 2)
+
     def align(self, other):
         """
         Uses procrustes analysis to align this shape to the other.
@@ -98,10 +119,12 @@ class Tooth(object):
         rot_matrix = create_rotation_matrix(angle)
         self.landmarks = self.landmarks.dot(rot_matrix)
         self._normals = None
+        self._centroid = None
 
     def scale(self, factor):
         self.landmarks *= factor
         self._normals = None
+        self._centroid = None
 
     def translate(self, vec):
         self.landmarks = self.landmarks + vec

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\fitterdialog.ui'
 #
-# Created: Tue Apr 26 22:24:42 2016
+# Created: Fri Apr 29 22:50:32 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -62,17 +62,22 @@ class Ui_fitterDialog(object):
         self.stepButton = QtWidgets.QPushButton(self.groupBox)
         self.stepButton.setObjectName("stepButton")
         self.verticalLayout_3.addWidget(self.stepButton)
-        self.animateButton = QtWidgets.QPushButton(self.groupBox)
+        self.groupBox_2 = QtWidgets.QGroupBox(self.groupBox)
+        self.groupBox_2.setObjectName("groupBox_2")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.animateButton = QtWidgets.QPushButton(self.groupBox_2)
         self.animateButton.setObjectName("animateButton")
-        self.verticalLayout_3.addWidget(self.animateButton)
-        self.fitButton = QtWidgets.QPushButton(self.groupBox)
-        self.fitButton.setObjectName("fitButton")
-        self.verticalLayout_3.addWidget(self.fitButton)
+        self.verticalLayout_5.addWidget(self.animateButton)
+        self.fullAsmCheckBox = QtWidgets.QCheckBox(self.groupBox_2)
+        self.fullAsmCheckBox.setObjectName("fullAsmCheckBox")
+        self.verticalLayout_5.addWidget(self.fullAsmCheckBox)
+        self.verticalLayout_3.addWidget(self.groupBox_2)
         self.paramsScrollArea = QtWidgets.QScrollArea(self.groupBox)
         self.paramsScrollArea.setWidgetResizable(True)
         self.paramsScrollArea.setObjectName("paramsScrollArea")
         self.paramsScrollAreaContents = QtWidgets.QWidget()
-        self.paramsScrollAreaContents.setGeometry(QtCore.QRect(0, 0, 363, 120))
+        self.paramsScrollAreaContents.setGeometry(QtCore.QRect(0, 0, 363, 93))
         self.paramsScrollAreaContents.setObjectName("paramsScrollAreaContents")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.paramsScrollAreaContents)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
@@ -102,6 +107,7 @@ class Ui_fitterDialog(object):
         self.label_2.setText(_translate("fitterDialog", "Sampling Level"))
         self.groupBox.setTitle(_translate("fitterDialog", "Active shape model"))
         self.stepButton.setText(_translate("fitterDialog", "Step"))
+        self.groupBox_2.setTitle(_translate("fitterDialog", "Animation toolbox"))
         self.animateButton.setText(_translate("fitterDialog", "Animate"))
-        self.fitButton.setText(_translate("fitterDialog", "Fit"))
+        self.fullAsmCheckBox.setText(_translate("fitterDialog", "Perform full algorithm"))
 

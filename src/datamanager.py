@@ -6,13 +6,19 @@ from src.radiograph import Radiograph
 class DataManager:
     number_of_radiographs = 14
     radiographs = None
+    left_out_radiograph = None
 
-    def __init__(self):
+    def __init__(self, leave_one_out=False):
         self.radiographs = list()
 
         for i in range(0, self.number_of_radiographs):
             radiograph = Radiograph()
             radiograph.load(i, True)
+
+            if leave_one_out and i == 0:
+                self.left_out_radiograph = radiograph
+                continue
+
             self.radiographs.append(radiograph)
 
     def get_all_teeth(self, make_copy=False):

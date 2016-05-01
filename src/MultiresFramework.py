@@ -13,8 +13,9 @@ class ResolutionLevel(object):
     image = None
     landmark_model = None
 
-    def __init__(self):
-        self.landmark_model = LandmarkIntensityModel()
+    def __init__(self, model_params):
+        k, m = model_params
+        self.landmark_model = LandmarkIntensityModel(k, m)
 
     def update_tooth_landmarks(self, tooth):
         '''
@@ -32,6 +33,8 @@ class MultiResolutionFramework(object):
 
     # Presets: median kernel size, bilateral kernel size, bilateral color delta
     _filter_presets = [(5, 17, 6), (3, 15, 6), (0, 7, 6)]
+    # Params: k and m parameter
+    _model_params = [(2, 5), (2, 5), (2, 5)]
 
     def __init__(self, data_manager):
         assert isinstance(data_manager, DataManager)
@@ -39,7 +42,7 @@ class MultiResolutionFramework(object):
 
         self.resolution_levels = list()
         for i in range(0, self.levels_count):
-            self.resolution_levels.append(ResolutionLevel())
+            self.resolution_levels.append(ResolutionLevel(MultiResolutionFramework._model_params[i]))
 
     def train(self):
         if Config.use_file_cache:

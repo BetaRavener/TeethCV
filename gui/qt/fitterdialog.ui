@@ -113,17 +113,26 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="animateButton">
-            <property name="text">
-             <string>Animate</string>
+           <widget class="QGroupBox" name="groupBox_2">
+            <property name="title">
+             <string>Animation toolbox</string>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="fitButton">
-            <property name="text">
-             <string>Fit</string>
-            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <widget class="QPushButton" name="animateButton">
+               <property name="text">
+                <string>Animate</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="fullAsmCheckBox">
+               <property name="text">
+                <string>Perform full algorithm</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
           <item>
@@ -137,7 +146,7 @@
                <x>0</x>
                <y>0</y>
                <width>363</width>
-               <height>120</height>
+               <height>93</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4"/>

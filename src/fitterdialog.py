@@ -1,35 +1,38 @@
-import random
 from copy import deepcopy
 from time import sleep
 
-import cv2
 import numpy as np
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QRectF
-from PyQt5.QtGui import QImage, QColor, QPainter, QPixmap, QPen, QBrush
+from PyQt5.QtGui import QColor, QPixmap, QPen, QBrush
 from PyQt5.QtWidgets import QDialog, QFileDialog, QGraphicsSceneMouseEvent, QSlider
 
 from gui.fitterdialog import Ui_fitterDialog
 from src.ActiveShapeModel import ActiveShapeModel
+from src.InitialPoseModel import InitialPoseModel
 from src.MultiresFramework import MultiResolutionFramework
 from src.datamanager import DataManager
-from src.filter import Filter
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
 from src.sampler import Sampler
 from src.tooth import Tooth
-from src.utils import toQImage
-from src.pca import PCA
+from src.utils import toQImage, StopIterationToken
 
 
-# TODO: Animator should only inform that ActiveShapeModel has changed
 class Animator(QThread):
-    output_signal = pyqtSignal(Tooth)
-    exiting = False
+    tooth_signal = pyqtSignal(Tooth, np.ndarray)
+    level_signal = pyqtSignal(int)
+
     active_shape_model = None
+    stop_token = None
+
+    run_config = False
+    run_tooth_idx = None
+    run_last_level = None
 
     def __init__(self, asm):
         super(Animator, self).__init__()
         self.active_shape_model = asm
+        self.stop_token = StopIterationToken()
 
     def __del__(self):
         # Notify worker that it's being destroyed so it can stop
@@ -39,16 +42,31 @@ class Animator(QThread):
         # Note: This is never called directly. It is called by Qt once the
         # thread environment has been set up.
 
-        random.seed()
+        if self.run_config:
+            self.active_shape_model.run(self.run_tooth_idx, self.stop_token, self.asm_run_callback)
+            return
 
         # TODO: Convergence
-        while not self.exiting:
+        while not self.stop_token.stop:
             self.active_shape_model.make_step()
+            self.tooth_signal.emit(deepcopy(self.active_shape_model.current_tooth),
+                                   deepcopy(self.active_shape_model.current_params))
 
-            self.output_signal.emit(deepcopy(self.active_shape_model.current_tooth))
+    def asm_run_callback(self):
+        level_change = False
+        if self.run_last_level != self.active_shape_model.current_level:
+            self.run_last_level = self.active_shape_model.current_level
+            self.level_signal.emit(self.run_last_level)
+            level_change = True
+
+        self.tooth_signal.emit(deepcopy(self.active_shape_model.current_tooth),
+                               deepcopy(self.active_shape_model.current_params))
+
+        if level_change:
+            sleep(1)
 
     def stop(self):
-        self.exiting = True
+        self.stop_token.stop = True
         self.wait()
 
 
@@ -100,7 +118,6 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
         self.stepButton.clicked.connect(self._perform_one_step_asm)
         self.animateButton.clicked.connect(self._animator_entry)
-        self.fitButton.clicked.connect(self._perform_full_asm)
 
         self._scales = np.empty(self.pca.eigen_values.shape)
         for i, deviation in enumerate(self.pca.get_allowed_deviation()):
@@ -134,8 +151,18 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.update_scale()
 
     def user_change_level(self, sampling_level):
+        if not self.levelSlider.isEnabled():
+            return
+
         self.current_sampling_level = sampling_level - 1
         self.active_shape_model.change_level(self.current_sampling_level)
+
+        self.update_scale()
+        self._redraw(self.active_shape_model.current_tooth)
+
+    def model_change_level(self, sampling_level):
+        self.current_sampling_level = sampling_level
+        self.levelSlider.setValue(self.current_sampling_level + 1)
 
         self.update_scale()
         self._redraw(self.active_shape_model.current_tooth)
@@ -163,8 +190,14 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self._disable_ui()
 
         self.animator = Animator(self.active_shape_model)
+
+        self.animator.run_config = self.fullAsmCheckBox.isChecked()
+        # TODO: Set from UI
+        self.animator.run_tooth_idx = 0
+
         self.animator.finished.connect(self._animator_end)
-        self.animator.output_signal.connect(self.update_animation)
+        self.animator.tooth_signal.connect(self.update_animation)
+        self.animator.level_signal.connect(self.model_change_level)
 
         self.animator.start()
 
@@ -172,17 +205,19 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.animateButton.setText("Animate")
         self.animator = None
         self.stepButton.setEnabled(True)
-        self.fitButton.setEnabled(True)
+        self.fullAsmCheckBox.setEnabled(True)
         self.scene.setEnabled(True)
+        self.levelSlider.setEnabled(True)
 
     def _disable_ui(self):
         self.animateButton.setText("Stop")
         self.stepButton.setEnabled(False)
-        self.fitButton.setEnabled(False)
+        self.fullAsmCheckBox.setEnabled(False)
         self.scene.setEnabled(False)
+        self.levelSlider.setEnabled(False)
 
-    def update_animation(self, tooth):
-        self._set_sliders_from_params(self.active_shape_model.current_params)
+    def update_animation(self, tooth, params):
+        self._set_sliders_from_params(params)
         self._redraw(tooth)
 
     def _focus_view(self, size):
@@ -209,6 +244,12 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         qimg = toQImage(img.astype(np.uint8))
         self.scene.addPixmap(QPixmap.fromImage(qimg))
 
+        # Draw initial positions
+        init_poses = InitialPoseModel.find(img, self.current_sampling_level)
+        for position, scale, rotation in init_poses:
+            self.scene.addEllipse(position[0] - 2, position[1] - 2, 4, 4,
+                                  pen=QPen(QColor.fromRgb(0, 0, 255)), brush=QBrush(QColor.fromRgb(0, 0, 255)))
+
         # Draw tooth from active shape model
         if tooth is not None:
             tooth.draw(self.scene, True, True)
@@ -218,10 +259,8 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
     def _perform_one_step_asm(self):
         self.active_shape_model.make_step()
-        self.update_animation(deepcopy(self.active_shape_model.current_tooth))
-
-    def _perform_full_asm(self):
-        pass
+        self.update_animation(deepcopy(self.active_shape_model.current_tooth),
+                              deepcopy(self.active_shape_model.current_params))
 
     def _get_all_sliders(self):
         sliders = list()

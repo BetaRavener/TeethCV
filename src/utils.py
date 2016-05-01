@@ -60,3 +60,7 @@ class Rectangle:
     @property
     def left_top(self):
         return np.array((self.left, self.top))
+
+
+class StopIterationToken(object):
+    stop = False

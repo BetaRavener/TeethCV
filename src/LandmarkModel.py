@@ -13,7 +13,7 @@ class LandmarkModel(object):
     m = None
     normalize = None
 
-    def __init__(self, k=10, m=30, normalize=True):
+    def __init__(self, k=2, m=12, normalize=True):
         self.radiograph_samples = list()
         self.k = k
         self.m = m
@@ -56,25 +56,6 @@ class LandmarkModel(object):
             new_landmarks.append(return_positions[i][position])
 
         return Tooth(np.array(new_landmarks))
-
-    #TODO: Remove in next version
-    def old_training(self, data_manager):
-        for radiograph in data_manager.radiographs:
-            # Pre-process the image
-            img = radiograph.image
-            cropping_region = Filter.get_cropping_region(img)
-            img = Filter.crop_image(img)
-            img = Filter.process_image(img)
-
-            # Create copy of data
-            teeth = deepcopy(radiograph.teeth)
-            # Translate landmarks into the cropped region
-            for tooth in teeth:
-                tooth.translate(-cropping_region.left_top)
-
-            self.add_training_data(teeth, img)
-
-        self.finish_training()
 
     def _find_best_position(self, sampled_profile, point_index):
         pass
