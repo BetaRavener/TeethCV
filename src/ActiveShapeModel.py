@@ -1,5 +1,8 @@
 from copy import deepcopy
 
+import cv2
+import numpy as np
+
 from src.MultiresFramework import MultiResolutionFramework
 from src.datamanager import DataManager
 from src.tooth import Tooth
@@ -20,12 +23,8 @@ class ActiveShapeModel(object):
     max_steps_per_level = 100
 
     @property
-    def image(self):
+    def current_image(self):
         return self.multi_resolution_framework.get_level(self.current_level).image
-
-    @image.setter
-    def image(self, img):
-        self.multi_resolution_framework.set_radiograph_image(img)
 
     def __init__(self, _data_manager, pca):
         assert isinstance(_data_manager, DataManager)
@@ -33,6 +32,9 @@ class ActiveShapeModel(object):
         self.pca = pca
         self.multi_resolution_framework = MultiResolutionFramework(self.data_manager)
         self.multi_resolution_framework.train()
+
+    def set_image_to_search(self, image):
+        self.multi_resolution_framework.set_radiograph_image(image)
 
     def set_up(self, translation=(0, 0), scale=1, rotation=0):
         self.mean_tooth = Tooth(to_landmarks_format(self.pca.mean))
@@ -59,7 +61,7 @@ class ActiveShapeModel(object):
 
             #TODO: Maybe do it statistically?
             # 3b. Limit pose values
-            scale = min(max(scale, 5), 60 / (2 ** self.current_level))
+            scale = min(max(scale, 5), 80 / (2 ** self.current_level))
 
             # 4. Reconstruct modified shape
             new_shape = self.pca.reconstruct(b)
@@ -73,10 +75,7 @@ class ActiveShapeModel(object):
     def _get_difference(self, previous_tooth):
         return self.current_tooth.sum_of_squared_distances(previous_tooth)
 
-    def run(self, initial_pose, stop_token=None, step_callback=None):
-        translation, scale, rot = initial_pose
-        self.set_up(translation, scale, rot)
-
+    def run(self, stop_token=None, step_callback=None):
         next_level = MultiResolutionFramework.levels_count - 1
         self.current_level = 0
 
@@ -104,6 +103,12 @@ class ActiveShapeModel(object):
 
             next_level -= 1
 
+        # At last, perform inverse crop translation
+        tooth = deepcopy(self.current_tooth)
+        assert isinstance(tooth, Tooth)
+        tooth.translate(-self.multi_resolution_framework.crop_translation)
+        return tooth
+
     def change_level(self, level):
         difference = level - self.current_level
         if difference == 0:
@@ -124,3 +129,4 @@ class ActiveShapeModel(object):
 
     def get_current_level(self):
         return self.multi_resolution_framework.get_level(self.current_level)
+

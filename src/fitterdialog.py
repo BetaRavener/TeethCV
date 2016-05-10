@@ -27,7 +27,6 @@ class Animator(QThread):
     stop_token = None
 
     run_config = False
-    run_tooth_pose = None
     run_last_level = None
 
     def __init__(self, asm):
@@ -44,7 +43,7 @@ class Animator(QThread):
         # thread environment has been set up.
 
         if self.run_config:
-            self.active_shape_model.run(self.run_tooth_pose, self.stop_token, self.asm_run_callback)
+            self.active_shape_model.run(self.stop_token, self.asm_run_callback)
             return
 
         while not self.stop_token.stop:
@@ -88,11 +87,11 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
     @property
     def image(self):
-        return self.active_shape_model.image
+        return self.active_shape_model.current_image
 
     @image.setter
     def image(self, img):
-        self.active_shape_model.image = img
+        self.active_shape_model.set_image_to_search(img)
 
     def __init__(self, data_manager, pca):
         super(FitterDialog, self).__init__()
@@ -204,8 +203,11 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.animator = Animator(self.active_shape_model)
 
         self.animator.run_config = self.fullAsmCheckBox.isChecked()
-        tooth_idx = self.startingPoseSpinBox.value()
-        self.animator.run_tooth_pose = self.initial_pose_model.find(self.image)[tooth_idx]
+        if self.animator.run_config:
+            tooth_idx = self.startingPoseSpinBox.value()
+            pose = self.initial_pose_model.find(self.image)[tooth_idx]
+            position, rotation, scale = pose
+            self.active_shape_model.set_up(position, rotation, scale)
 
         self.animator.finished.connect(self._animator_end)
         self.animator.tooth_signal.connect(self.update_animation)
@@ -245,7 +247,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         if normalize:
             img = (img / img.max()) * 255
 
-        # Draw sampled possitions to image
+        # Draw sampled positions to image
         if self.show_sampled_positions and tooth is not None:
             resolution_level = self.active_shape_model.get_current_level()
             assert isinstance(resolution_level, ResolutionLevel)
@@ -268,6 +270,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
         # Draw tooth from active shape model
         if tooth is not None:
+            tooth.outline_pen = QPen(QColor(255, 0, 0))
             tooth.draw(self.scene, True, True)
 
         # Set generated scene into the view

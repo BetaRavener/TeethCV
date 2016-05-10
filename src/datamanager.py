@@ -10,7 +10,7 @@ class DataManager:
     left_out_radiograph = None
     selector = None
 
-    def __init__(self, leave_one_out=False):
+    def __init__(self, leave_one_out=None):
         self.radiographs = list()
         self.selector = range(0, 8)
 
@@ -18,7 +18,7 @@ class DataManager:
             radiograph = Radiograph()
             radiograph.load(i, True)
 
-            if leave_one_out and i == 0:
+            if leave_one_out is not None and i == leave_one_out:
                 self.left_out_radiograph = radiograph
                 continue
 

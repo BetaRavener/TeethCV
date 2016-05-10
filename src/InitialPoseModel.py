@@ -13,10 +13,10 @@ class InitialPoseModel(object):
 
     @staticmethod
     def _find_basic_poses(image):
-        return [(np.array((251, 405)), 40, 0),
-                (np.array((345, 401)), 40, 0),
-                (np.array((470, 393)), 40, 0),
-                (np.array((561, 678)), 40, 0),
+        return [(np.array((251, 405)), 50, 0),
+                (np.array((345, 401)), 50, 0.1),
+                (np.array((470, 393)), 50, 0.1),
+                (np.array((561, 378)), 50, 0.2),
                 (np.array((291, 605)), 40, 0),
                 (np.array((375, 601)), 40, 0),
                 (np.array((460, 593)), 40, 0),
@@ -30,7 +30,7 @@ class InitialPoseModel(object):
 
     def find(self, image):
         '''
-        Finds initial poses at given level
+        Finds initial poses
         :param image:
         :param level:
         :return:

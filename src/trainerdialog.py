@@ -6,12 +6,14 @@ from PyQt5.QtGui import QPen, QColor, QBrush
 from PyQt5.QtWidgets import QDialog, QGraphicsScene
 
 from gui.trainer import Ui_Trainer
+from src.StatisticalShapeModel import StatisticalShapeModel
 from src.datamanager import DataManager
 from src.pca import PCA
 from src.tooth import Tooth
 from src.utils import to_landmarks_format
 
-__author__ = "Ivan Sevcik, Jakub Macina"
+__author__ = "Ivan Sevcik"
+
 
 class TrainerDialog(QDialog, Ui_Trainer):
     scene = None
@@ -21,8 +23,6 @@ class TrainerDialog(QDialog, Ui_Trainer):
     align_step = 0
 
     pca = None
-
-    np.ndarray
 
     trained = pyqtSignal(PCA)
 
@@ -89,35 +89,7 @@ class TrainerDialog(QDialog, Ui_Trainer):
         self.graphicsView.fitInView(rect, Qt.KeepAspectRatio)
 
     def train(self):
-        teeth = self.data_manager.get_all_teeth(True)
-        mean_shape = deepcopy(teeth[0])
-        assert isinstance(mean_shape, Tooth)
-        mean_shape.move_to_origin()
-        mean_shape.normalize_shape()
-
-        error = float("inf")
-        while error > 0.05:
-            meanAcum = np.zeros(mean_shape.landmarks.shape)
-            for i in range(0, len(teeth)):
-                teeth[i].align(mean_shape)
-                meanAcum += teeth[i].landmarks
-
-            new_mean_shape = Tooth(meanAcum / len(teeth))
-            new_mean_shape.align(mean_shape)
-            error = new_mean_shape.sum_of_squared_distances(mean_shape)
-
-            mean_shape = new_mean_shape
-
-        # Realign all teeth with final mean shape
-        for i in range(0, len(teeth)):
-            teeth[i].align(mean_shape)
-
-        data = np.zeros((len(teeth), teeth[0].landmarks.size))
-        for i, tooth in enumerate(teeth):
-            data[i, :] = tooth.landmarks.flatten()
-
-        self.pca = PCA()
-        self.pca.train(deepcopy(data))
+        self.pca = StatisticalShapeModel.create(self.data_manager)
         self.pca.threshold(self.thresholdSpinBox.value())
         self._show_training_result()
 

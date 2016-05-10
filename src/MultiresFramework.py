@@ -10,6 +10,7 @@ from src.filter import Filter
 
 __author__ = "Ivan Sevcik"
 
+
 class ResolutionLevel(object):
     image = None
     landmark_model = None
@@ -31,12 +32,12 @@ class MultiResolutionFramework(object):
     levels_count = 2
     data_manager = None
     resolution_levels = None
+    crop_translation = None  # Crop translation for currently processed image
 
     # Presets: median kernel size, bilateral kernel size, bilateral color delta
     _filter_presets = [(5, 17, 6), (3, 15, 6), (0, 7, 6)]
     # Params: k and m parameter
-    #_model_params = [(2, 5), (2, 5), (2, 5)]
-    _model_params = [(5, 10), (5, 10), (2, 5)]
+    _model_params = [(5, 14), (5, 14), (2, 5)]
 
     def __init__(self, data_manager):
         assert isinstance(data_manager, DataManager)
@@ -84,8 +85,8 @@ class MultiResolutionFramework(object):
 
                 # Add new data to the training set for given resolution
                 resolution_level.landmark_model.add_training_data(teeth, filtered_image)
-                print "#Training level %d done" % (i+1)
-            print "###Training radiograph %d done" % (r+1)
+                print "#Training level %d done" % (i + 1)
+            print "###Training radiograph %d done" % (r + 1)
 
         # Finish training at all levels
         for i, resolution_level in enumerate(self.resolution_levels):
@@ -103,6 +104,7 @@ class MultiResolutionFramework(object):
         Processes image and saves it's subsampled version into appropriate resolution levels
         :param image: Image to process. Should be original radiograph image without processing.
         '''
+        self.crop_translation = -Filter.get_cropping_region(radiograph_image).left_top
         image = Filter.crop_image(radiograph_image)
         for i in range(0, self.levels_count):
             if i > 0:
