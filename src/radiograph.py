@@ -3,6 +3,7 @@ import numpy as np
 
 from src.tooth import Tooth
 
+__author__ = "Ivan Sevcik"
 
 def read_landmarks(filename):
     with open(filename) as landmarks_file:
@@ -15,21 +16,21 @@ def read_landmarks(filename):
 
 
 class Radiograph:
-    teeth = None
+    _teeth = None
     idx = None
     path_to_img = None
 
     def __init__(self):
-        self.teeth = list()
+        self._teeth = list()
 
     def load(self, idx, annotated=False):
         self.idx = idx
 
         # Load and draw landmarks
         if annotated:
-            for i in range(0, 4):
+            for i in range(0, 8):
                 landmarks = read_landmarks('./data/Landmarks/original/landmarks%d-%d.txt' % (idx + 1, i + 1))
-                self.teeth.append(Tooth(landmarks))
+                self._teeth.append(Tooth(landmarks))
 
         self.path_to_img = './data/Radiographs/%02d.tif' % (self.idx + 1)
 

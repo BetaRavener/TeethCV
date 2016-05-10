@@ -10,6 +10,7 @@ from src.MultiresFramework import MultiResolutionFramework
 from src.datamanager import DataManager
 from src.utils import toQImage
 
+__author__ = "Ivan Sevcik"
 
 class FilteringDialog(QDialog, Ui_Dialog):
     scene = None

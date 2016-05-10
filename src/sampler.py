@@ -1,8 +1,8 @@
-import cv2
 import numpy as np
 
 from src.tooth import Tooth
 
+__author__ = "Ivan Sevcik"
 
 class Sampler(object):
     @staticmethod
@@ -12,18 +12,22 @@ class Sampler(object):
         center_point_tuple = tuple(center_point.astype(np.int32))
 
         scale = 0
+        last_point_tuple = center_point_tuple
         while len(positive_samples) < sample_count:
             scale += 0.5
             sample_point = tuple(np.floor(center_point + normal * scale).astype(np.int32))
-            if sample_point not in positive_samples and sample_point != center_point_tuple:
+            if sample_point != last_point_tuple:
                 positive_samples.append(sample_point)
+                last_point_tuple = sample_point
 
         scale = 0
+        last_point_tuple = center_point_tuple
         while len(negative_samples) < sample_count:
             scale -= 0.5
             sample_point = tuple(np.floor(center_point + normal * scale).astype(np.int32))
-            if sample_point not in negative_samples and sample_point != center_point_tuple:
+            if sample_point != last_point_tuple:
                 negative_samples.append(sample_point)
+                last_point_tuple = sample_point
 
         negative_samples.reverse()
         negative_samples.append(center_point_tuple)
@@ -33,7 +37,7 @@ class Sampler(object):
     def _sample_image(image, positions):
         samples = list()
         for position in positions:
-            if position[0] < 0 or position[1] < 0 or position[0] > image.shape[1] or position[1] > image.shape[0]:
+            if position[0] < 0 or position[1] < 0 or position[0] >= image.shape[1] or position[1] >= image.shape[0]:
                 samples.append(0)
             else:
                 samples.append(image[position[1], position[0]])

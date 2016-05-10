@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QGraphicsSceneMouseEvent, QSli
 from gui.fitterdialog import Ui_fitterDialog
 from src.ActiveShapeModel import ActiveShapeModel
 from src.InitialPoseModel import InitialPoseModel
-from src.MultiresFramework import MultiResolutionFramework
+from src.MultiresFramework import MultiResolutionFramework, ResolutionLevel
 from src.datamanager import DataManager
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
@@ -17,6 +17,7 @@ from src.sampler import Sampler
 from src.tooth import Tooth
 from src.utils import toQImage, StopIterationToken
 
+__author__ = "Ivan Sevcik"
 
 class Animator(QThread):
     tooth_signal = pyqtSignal(Tooth, np.ndarray)
@@ -26,7 +27,7 @@ class Animator(QThread):
     stop_token = None
 
     run_config = False
-    run_tooth_idx = None
+    run_tooth_pose = None
     run_last_level = None
 
     def __init__(self, asm):
@@ -43,10 +44,9 @@ class Animator(QThread):
         # thread environment has been set up.
 
         if self.run_config:
-            self.active_shape_model.run(self.run_tooth_idx, self.stop_token, self.asm_run_callback)
+            self.active_shape_model.run(self.run_tooth_pose, self.stop_token, self.asm_run_callback)
             return
 
-        # TODO: Convergence
         while not self.stop_token.stop:
             self.active_shape_model.make_step()
             self.tooth_signal.emit(deepcopy(self.active_shape_model.current_tooth),
@@ -76,11 +76,15 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     data_manager = None
     current_scale = 0
     current_sampling_level = 0
+    current_phase = None
     active_shape_model = None
     pca = None
+    initial_pose_model = None
 
     slider_resolution = 1000
     _scales = None
+
+    show_sampled_positions = None
 
     @property
     def image(self):
@@ -99,6 +103,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.data_manager = data_manager
         self.pca = pca
         self.active_shape_model = ActiveShapeModel(self.data_manager, self.pca)
+        self.initial_pose_model = InitialPoseModel(self.data_manager)
 
         self.scene = InteractiveGraphicsScene()
         self.graphicsView.setScene(self.scene)
@@ -126,6 +131,9 @@ class FitterDialog(QDialog, Ui_fitterDialog):
             # slider.valueChanged.connect(self.slider_moved)
             self.paramsScrollAreaContents.layout().addWidget(slider)
             self._scales[i] = deviation / self.slider_resolution
+
+        self.show_sampled_positions = self.sampledPositionsCheckBox.isChecked()
+        self.sampledPositionsCheckBox.stateChanged.connect(self.change_show_positions)
 
         self._redraw(self.active_shape_model.current_tooth)
 
@@ -160,6 +168,10 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.update_scale()
         self._redraw(self.active_shape_model.current_tooth)
 
+    def change_show_positions(self):
+        self.show_sampled_positions = self.sampledPositionsCheckBox.isChecked()
+        self._redraw(self.active_shape_model.current_tooth)
+
     def model_change_level(self, sampling_level):
         self.current_sampling_level = sampling_level
         self.levelSlider.setValue(self.current_sampling_level + 1)
@@ -176,8 +188,8 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     def _set_position(self, mouse_event):
         assert isinstance(mouse_event, QGraphicsSceneMouseEvent)
         pos = mouse_event.scenePos()
-        self.active_shape_model.set_up((pos.x(), pos.y()), 12 * (
-            2 ** (MultiResolutionFramework.levels_count - self.current_sampling_level - 1)))
+        self.active_shape_model.set_up((pos.x(), pos.y()), 60 / (
+            2 ** self.current_sampling_level))
         self._redraw(self.active_shape_model.current_tooth)
 
     def _animator_entry(self):
@@ -192,8 +204,8 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.animator = Animator(self.active_shape_model)
 
         self.animator.run_config = self.fullAsmCheckBox.isChecked()
-        # TODO: Set from UI
-        self.animator.run_tooth_idx = 0
+        tooth_idx = self.startingPoseSpinBox.value()
+        self.animator.run_tooth_pose = self.initial_pose_model.find(self.image)[tooth_idx]
 
         self.animator.finished.connect(self._animator_end)
         self.animator.tooth_signal.connect(self.update_animation)
@@ -210,6 +222,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.levelSlider.setEnabled(True)
 
     def _disable_ui(self):
+        self.current_phase = None
         self.animateButton.setText("Stop")
         self.stepButton.setEnabled(False)
         self.fullAsmCheckBox.setEnabled(False)
@@ -224,29 +237,32 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         rect = QRectF(0, 0, size[0], size[1])
         self.scene.setSceneRect(rect)
 
-    def _redraw(self, tooth, normalize=True, show_sampled_positions=False):
+    def _redraw(self, tooth, normalize=True):
         self.scene.clear()
 
         img = self.image.copy()
 
-        # Draw sampled possitions to image
-        if show_sampled_positions and tooth is not None:
-            img_max = img.max()
-            all_sample_positions = []
-            Sampler.sample(tooth, img, self.active_shape_model.m, False, all_sample_positions)
-            for point_sample_positions in all_sample_positions:
-                for x, y in point_sample_positions:
-                    img[y, x] = img_max
-
-        # Draw image
         if normalize:
             img = (img / img.max()) * 255
+
+        # Draw sampled possitions to image
+        if self.show_sampled_positions and tooth is not None:
+            resolution_level = self.active_shape_model.get_current_level()
+            assert isinstance(resolution_level, ResolutionLevel)
+            all_sample_positions = []
+            Sampler.sample(tooth, img, resolution_level.landmark_model.m, False, all_sample_positions)
+            for point_sample_positions in all_sample_positions:
+                for x, y in point_sample_positions:
+                    img[y, x] = 255
+
+        # Draw image
         qimg = toQImage(img.astype(np.uint8))
         self.scene.addPixmap(QPixmap.fromImage(qimg))
 
         # Draw initial positions
-        init_poses = InitialPoseModel.find(img, self.current_sampling_level)
-        for position, scale, rotation in init_poses:
+        init_poses = self.initial_pose_model.find(self.image)
+        for pose in init_poses:
+            position, scale, rotation = InitialPoseModel.downsample_pose(pose, self.current_sampling_level)
             self.scene.addEllipse(position[0] - 2, position[1] - 2, 4, 4,
                                   pen=QPen(QColor.fromRgb(0, 0, 255)), brush=QBrush(QColor.fromRgb(0, 0, 255)))
 
@@ -258,7 +274,12 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self._focus_view((qimg.width(), qimg.height()))
 
     def _perform_one_step_asm(self):
-        self.active_shape_model.make_step()
+        if self.current_phase is None:
+            self.current_phase = 0
+        else:
+            self.current_phase = (self.current_phase + 1) % 2
+
+        self.active_shape_model.make_step(self.current_phase)
         self.update_animation(deepcopy(self.active_shape_model.current_tooth),
                               deepcopy(self.active_shape_model.current_params))
 
@@ -272,8 +293,13 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         return sliders
 
     def _set_sliders_from_params(self, params):
+        if params is None:
+            return
+
         slider_values = params / self._scales
         self.ignore_sliders = True
         for i, slider in enumerate(self._get_all_sliders()):
             slider.setValue(int(slider_values[i]))
         self.ignore_sliders = False
+
+

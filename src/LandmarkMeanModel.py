@@ -2,6 +2,7 @@ import numpy as np
 
 from src.LandmarkModel import LandmarkModel
 
+__author__ = "Ivan Sevcik"
 
 class LandmarkIntensityModel(LandmarkModel):
     means_points_model = None

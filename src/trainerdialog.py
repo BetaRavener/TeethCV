@@ -11,6 +11,7 @@ from src.pca import PCA
 from src.tooth import Tooth
 from src.utils import to_landmarks_format
 
+__author__ = "Ivan Sevcik, Jakub Macina"
 
 class TrainerDialog(QDialog, Ui_Trainer):
     scene = None

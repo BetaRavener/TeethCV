@@ -19,6 +19,8 @@ from src.sampler import Sampler
 from src.trainerdialog import TrainerDialog
 from src.utils import toQImage
 
+__author__ = "Ivan Sevcik"
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     scene = None
@@ -41,6 +43,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.scene.clicked.connect()
 
         self.data_manager = DataManager()
+        self.data_manager.select_lower_jaw()
 
         self.graphicsView.setScene(self.scene)
 
@@ -109,7 +112,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         radiograph = self.data_manager.radiographs[idx]
 
         image = radiograph.image
-        teeth = radiograph.teeth
+        teeth = self.data_manager.get_all_teeth_from_radiograph(radiograph, True)
 
         # Apply sampling level
         for i in range(0, self.sampling_level):

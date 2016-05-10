@@ -8,6 +8,7 @@ from src.config import Config
 from src.datamanager import DataManager
 from src.filter import Filter
 
+__author__ = "Ivan Sevcik"
 
 class ResolutionLevel(object):
     image = None
@@ -27,14 +28,15 @@ class ResolutionLevel(object):
 
 
 class MultiResolutionFramework(object):
-    levels_count = 3
+    levels_count = 2
     data_manager = None
     resolution_levels = None
 
     # Presets: median kernel size, bilateral kernel size, bilateral color delta
     _filter_presets = [(5, 17, 6), (3, 15, 6), (0, 7, 6)]
     # Params: k and m parameter
-    _model_params = [(2, 5), (2, 5), (2, 5)]
+    #_model_params = [(2, 5), (2, 5), (2, 5)]
+    _model_params = [(5, 10), (5, 10), (2, 5)]
 
     def __init__(self, data_manager):
         assert isinstance(data_manager, DataManager)
@@ -56,7 +58,7 @@ class MultiResolutionFramework(object):
         # Iterate all radiographs one by one to save memory
         for r, radiograph in enumerate(self.data_manager.radiographs):
             image = radiograph.image
-            teeth = deepcopy(radiograph.teeth)
+            teeth = self.datamanager.get_all_teeth_from_radiograph(radiograph, True)
 
             # Crop image to region of interest and translate all teeth into cropped region
             crop_translation = -Filter.get_cropping_region(image).left_top

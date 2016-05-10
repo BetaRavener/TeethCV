@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\trainer.ui'
 #
-# Created: Fri Apr 29 22:50:33 2016
+# Created: Tue May 10 01:30:25 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

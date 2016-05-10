@@ -3,6 +3,7 @@ import numpy as np
 
 from src.utils import Rectangle
 
+__author__ = "Ivan Sevcik"
 
 class Filter:
     @staticmethod

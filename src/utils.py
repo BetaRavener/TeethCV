@@ -1,6 +1,8 @@
 import numpy as np
 from PyQt5.QtGui import QImage, qRgb
 
+__author__ = "Ivan Sevcik"
+
 gray_color_table = [qRgb(gctIdx, gctIdx, gctIdx) for gctIdx in range(256)]
 
 

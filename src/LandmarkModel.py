@@ -6,6 +6,7 @@ from src.filter import Filter
 from src.sampler import Sampler
 from src.tooth import Tooth
 
+__author__ = "Ivan Sevcik"
 
 class LandmarkModel(object):
     radiograph_samples = None

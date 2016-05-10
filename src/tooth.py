@@ -5,6 +5,7 @@ import math
 
 from src.utils import line_normal, create_rotation_matrix
 
+__author__ = "Ivan Sevcik"
 
 class Tooth(object):
     landmarks = None
@@ -55,8 +56,7 @@ class Tooth(object):
         Measures error between this and other shape. It can be used for comparing with correct shape during Leave one
         out analysis etc. In that case this should be the correct one.
         :param other: Shape for which the error against this one should be found.
-        :return: Average distance between shapes normalized by the size of correct shape. The size is calculated as
-                 average of distances from centroid.
+        :return: Average error and maximum error
         '''
 
         # Center landmarks
@@ -65,11 +65,11 @@ class Tooth(object):
 
         differences = np.linalg.norm(found_landmarks - correct_landmarks, axis=1)
         distances = np.linalg.norm(correct_landmarks, axis=1)
+        errors = differences / distances
 
-        return np.average(differences) / np.average(distances)
-
-
-        np.linalg.norm(predicted - actual_points, 2) / np.linalg.norm(actual_points, 2)
+        return np.average(errors), np.max(errors)
+        #TODO: Delete
+        #np.linalg.norm(predicted - actual_points, 2) / np.linalg.norm(actual_points, 2)
 
     def align(self, other):
         """

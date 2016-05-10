@@ -12,6 +12,7 @@ from src.pca import PCA
 from src.tooth import Tooth
 from src.utils import to_landmarks_format
 
+__author__ = "Ivan Sevcik"
 
 class PcaVisualizerDialog(QDialog, Ui_PcaVisualizerDialog):
     slider_resolution = 1000

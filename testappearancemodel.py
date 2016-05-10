@@ -11,6 +11,8 @@ from src.pca import PCA
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 
+__author__ = "Ivan Sevcik"
+
 
 def cov(a, b):
 

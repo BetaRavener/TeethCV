@@ -1,6 +1,7 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent
 
+__author__ = "Ivan Sevcik"
 
 class InteractiveGraphicsScene(QGraphicsScene):
     clicked = pyqtSignal(QGraphicsSceneMouseEvent)

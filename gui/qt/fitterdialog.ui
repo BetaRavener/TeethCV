@@ -94,6 +94,13 @@
         </layout>
        </item>
        <item>
+        <widget class="QCheckBox" name="sampledPositionsCheckBox">
+         <property name="text">
+          <string>Show sampled positions</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="minimumSize">
           <size>
@@ -126,11 +133,45 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="fullAsmCheckBox">
-               <property name="text">
-                <string>Perform full algorithm</string>
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <property name="topMargin">
+                <number>0</number>
                </property>
-              </widget>
+               <item>
+                <widget class="QCheckBox" name="fullAsmCheckBox">
+                 <property name="text">
+                  <string>Perform full algorithm</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Starting pose</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="startingPoseSpinBox">
+                 <property name="maximum">
+                  <number>8</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>
@@ -146,7 +187,7 @@
                <x>0</x>
                <y>0</y>
                <width>363</width>
-               <height>93</height>
+               <height>76</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4"/>
