@@ -294,7 +294,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         # Draw initial positions
         if self.cached_init_poses is None:
             self.cached_init_poses = self.initial_pose_model.find(self.radiograph_image)
-            
+
         for pose in self.cached_init_poses:
             position, scale, rotation = InitialPoseModel.downsample_pose(pose, self.current_sampling_level)
             self.scene.addEllipse(position[0] - 2, position[1] - 2, 4, 4,

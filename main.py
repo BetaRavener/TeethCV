@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QDialog
 
 from gui.mainwindow import Ui_MainWindow
 from gui.trainer import Ui_Trainer
+from src.InitialPoseDialog import InitialPoseDialog
 from src.MultiresFramework import MultiResolutionFramework
 from src.datamanager import DataManager
 from src.filteringdialog import FilteringDialog
@@ -72,9 +73,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.fitterButton.setEnabled(False)
         self.fitterButton.clicked.connect(self.open_fitter)
 
+        self.initializationButton.clicked.connect(self.open_initialize_pose)
+
     def open_trainer(self):
         dialog = TrainerDialog(self.data_manager)
         dialog.trained.connect(self.save_training)
+        dialog.exec_()
+
+    def open_initialize_pose(self):
+        dialog = InitialPoseDialog(self.data_manager)
         dialog.exec_()
 
     def open_filtering(self):
