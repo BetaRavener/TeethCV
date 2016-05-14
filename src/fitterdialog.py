@@ -88,6 +88,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
     show_sampled_positions = None
 
     radiograph_image = None
+    cached_init_poses = None
 
     @property
     def image(self):
@@ -160,6 +161,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
             radiograph.path_to_img = file_dialog.selectedFiles()[0]
             self.image = radiograph.image
             self.radiograph_image = Filter.crop_image(radiograph.image)
+            self.cached_init_poses = None
             self._redraw(self.active_shape_model.current_tooth)
 
     def _export_result(self):
@@ -290,8 +292,10 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.scene.addPixmap(QPixmap.fromImage(qimg))
 
         # Draw initial positions
-        init_poses = self.initial_pose_model.find(self.radiograph_image)
-        for pose in init_poses:
+        if self.cached_init_poses is None:
+            self.cached_init_poses = self.initial_pose_model.find(self.radiograph_image)
+            
+        for pose in self.cached_init_poses:
             position, scale, rotation = InitialPoseModel.downsample_pose(pose, self.current_sampling_level)
             self.scene.addEllipse(position[0] - 2, position[1] - 2, 4, 4,
                                   pen=QPen(QColor.fromRgb(0, 0, 255)), brush=QBrush(QColor.fromRgb(0, 0, 255)))
