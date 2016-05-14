@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './gui/qt\mainwindow.ui'
+# Form implementation generated from reading ui file 'gui/qt/mainwindow.ui'
 #
-# Created: Tue May 10 18:16:28 2016
-#      by: PyQt5 UI code generator 5.3.2
+# Created by: PyQt5 UI code generator 5.5
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -111,12 +110,15 @@ class Ui_MainWindow(object):
         self.fitterButton = QtWidgets.QPushButton(self.centralwidget)
         self.fitterButton.setObjectName("fitterButton")
         self.verticalLayout.addWidget(self.fitterButton)
+        self.initializationButton = QtWidgets.QPushButton(self.centralwidget)
+        self.initializationButton.setObjectName("initializationButton")
+        self.verticalLayout.addWidget(self.initializationButton)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 25))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -138,4 +140,5 @@ class Ui_MainWindow(object):
         self.filteringButton.setText(_translate("MainWindow", "Filtering"))
         self.pcaVisualizerButton.setText(_translate("MainWindow", "PCA Visualizer"))
         self.fitterButton.setText(_translate("MainWindow", "Fitter"))
+        self.initializationButton.setText(_translate("MainWindow", "Initialization"))
 
