@@ -12,6 +12,7 @@ from src.ActiveShapeModel import ActiveShapeModel
 from src.InitialPoseModel import InitialPoseModel
 from src.MultiresFramework import MultiResolutionFramework, ResolutionLevel
 from src.datamanager import DataManager
+from src.filter import Filter
 from src.interactivegraphicsscene import InteractiveGraphicsScene
 from src.radiograph import Radiograph
 from src.sampler import Sampler
@@ -113,6 +114,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.scene.clicked.connect(self._set_position)
 
         self.image = self.data_manager.radiographs[0].image
+        self.radiograph_image = Filter.crop_image(self.data_manager.radiographs[0].image)
 
         self.openButton.clicked.connect(self._open_radiograph)
         self.exportButton.clicked.connect(self._export_result)
@@ -157,6 +159,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
             radiograph = Radiograph()
             radiograph.path_to_img = file_dialog.selectedFiles()[0]
             self.image = radiograph.image
+            self.radiograph_image = Filter.crop_image(radiograph.image)
             self._redraw(self.active_shape_model.current_tooth)
 
     def _export_result(self):
@@ -228,7 +231,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.animator.run_config = self.fullAsmCheckBox.isChecked()
         if self.animator.run_config:
             tooth_idx = self.startingPoseSpinBox.value()
-            pose = self.initial_pose_model.find(self.image)[tooth_idx]
+            pose = self.initial_pose_model.find(self.radiograph_image)[tooth_idx]
             position, rotation, scale = pose
             self.active_shape_model.set_up(position, rotation, scale)
 
@@ -287,7 +290,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.scene.addPixmap(QPixmap.fromImage(qimg))
 
         # Draw initial positions
-        init_poses = self.initial_pose_model.find(self.image)
+        init_poses = self.initial_pose_model.find(self.radiograph_image)
         for pose in init_poses:
             position, scale, rotation = InitialPoseModel.downsample_pose(pose, self.current_sampling_level)
             self.scene.addEllipse(position[0] - 2, position[1] - 2, 4, 4,

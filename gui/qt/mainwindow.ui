@@ -230,6 +230,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="initializationButton">
+        <property name="text">
+         <string>Initialization</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -252,7 +259,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
