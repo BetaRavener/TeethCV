@@ -59,7 +59,7 @@ class ActiveShapeModel(object):
             for i in range(0, b.shape[0]):
                 b[i] = min(max(b[i], -max_deviations[i]), max_deviations[i])
 
-            #TODO: Maybe do it statistically?
+            # TODO: Maybe do it statistically?
             # 3b. Limit pose values
             scale = min(max(scale, 5), 80 / (2 ** self.current_level))
 
@@ -130,3 +130,8 @@ class ActiveShapeModel(object):
     def get_current_level(self):
         return self.multi_resolution_framework.get_level(self.current_level)
 
+    def get_current_tooth_positioned(self):
+        tooth = deepcopy(self.current_tooth)
+        assert isinstance(tooth, Tooth)
+        tooth.translate(-self.multi_resolution_framework.crop_translation)
+        return tooth

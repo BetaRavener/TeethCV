@@ -105,6 +105,18 @@ def visualize_data(window, data_manager, search_results):
 
     window.set_scene(scene)
 
+
+def export_data(data_manager, search_results):
+    assert isinstance(data_manager, DataManager)
+    reference_radiograph = data_manager.left_out_radiograph
+    reference_image = reference_radiograph.image
+
+    for i, tooth in enumerate(search_results):
+        assert isinstance(tooth, Tooth)
+        real_tooth_idx = data_manager.selector[i] + 1
+        tooth.export_landmarks("loo-%d" % real_tooth_idx)
+        tooth.export_segmentation("loo-%d" % real_tooth_idx, reference_image.shape)
+
 # Create main app
 myApp = QApplication(sys.argv)
 window = SimpleSceneWindow()
@@ -113,6 +125,8 @@ leave_out = int(input("Enter radiograph to leave out (1-14): ")) - 1
 if leave_out > 14 or leave_out < 0:
     print 'Invalid selection'
     exit()
+
+export_flag = (raw_input("Should the result be exported? (n/y): ") == "y")
 
 data_manager = DataManager(leave_out)
 #visualize_data(window, data_manager, None)
@@ -130,6 +144,8 @@ print ""
 visualize_data(window, data_manager, upper_jaw_teeth)
 window.show()
 myApp.exec_()
+if export_flag:
+    export_data(data_manager, upper_jaw_teeth)
 
 print "Processing lower jaw."
 data_manager.select_lower_jaw()
@@ -142,3 +158,5 @@ print ""
 visualize_data(window, data_manager, lower_jaw_teeth)
 window.show()
 myApp.exec_()
+if export_flag:
+    export_data(data_manager, lower_jaw_teeth)

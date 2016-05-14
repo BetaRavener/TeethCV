@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\mainwindow.ui'
 #
-# Created: Tue May 10 18:16:28 2016
+# Created: Sat May 14 22:47:36 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -99,6 +99,27 @@ class Ui_MainWindow(object):
         self.levelSlider.setObjectName("levelSlider")
         self.horizontalLayout_4.addWidget(self.levelSlider)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setContentsMargins(-1, 0, -1, -1)
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.label_5 = QtWidgets.QLabel(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
+        self.label_5.setSizePolicy(sizePolicy)
+        self.label_5.setObjectName("label_5")
+        self.horizontalLayout_6.addWidget(self.label_5)
+        self.selectComboBox = QtWidgets.QComboBox(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.selectComboBox.sizePolicy().hasHeightForWidth())
+        self.selectComboBox.setSizePolicy(sizePolicy)
+        self.selectComboBox.setMinimumSize(QtCore.QSize(200, 0))
+        self.selectComboBox.setObjectName("selectComboBox")
+        self.horizontalLayout_6.addWidget(self.selectComboBox)
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
         self.trainerButton = QtWidgets.QPushButton(self.centralwidget)
         self.trainerButton.setObjectName("trainerButton")
         self.verticalLayout.addWidget(self.trainerButton)
@@ -134,6 +155,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "Sample"))
         self.label.setText(_translate("MainWindow", "Zoom"))
         self.label_3.setText(_translate("MainWindow", "Level"))
+        self.label_5.setText(_translate("MainWindow", "Select"))
         self.trainerButton.setText(_translate("MainWindow", "Trainer"))
         self.filteringButton.setText(_translate("MainWindow", "Filtering"))
         self.pcaVisualizerButton.setText(_translate("MainWindow", "PCA Visualizer"))

@@ -43,7 +43,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.scene.clicked.connect()
 
         self.data_manager = DataManager()
-        self.data_manager.select_lower_jaw()
 
         self.graphicsView.setScene(self.scene)
 
@@ -60,6 +59,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.levelSlider.setRange(1, MultiResolutionFramework.levels_count)
         self.levelSlider.setValue(self.sampling_level + 1)
         self.levelSlider.valueChanged.connect(self.change_sampling_level)
+
+        self.selectComboBox.addItems(["All teeth", "Upper jaw", "Lower jaw"])
+        self.selectComboBox.currentIndexChanged.connect(self.selection_changed)
 
         self.trainerButton.clicked.connect(self.open_trainer)
         self.filteringButton.clicked.connect(self.open_filtering)
@@ -104,6 +106,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def change_sampling_level(self, sampling_level):
         self.sampling_level = sampling_level - 1
+        self.display_radiograph(self.current_sample)
+
+    def selection_changed(self, idx):
+        if idx == 0:
+            self.data_manager.select_all_teeth()
+        elif idx == 1:
+            self.data_manager.select_upper_jaw()
+        else:
+            self.data_manager.select_lower_jaw()
+
+        # Disable other parts until the pca is trained again
+        self.pcaVisualizerButton.setEnabled(False)
+        self.fitterButton.setEnabled(False)
+
+        # Show new selection
         self.display_radiograph(self.current_sample)
 
     def display_radiograph(self, idx):

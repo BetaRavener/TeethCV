@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 from time import sleep
 
@@ -85,12 +86,15 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
     show_sampled_positions = None
 
+    radiograph_image = None
+
     @property
     def image(self):
         return self.active_shape_model.current_image
 
     @image.setter
     def image(self, img):
+        self.radiograph_image = img
         self.active_shape_model.set_image_to_search(img)
 
     def __init__(self, data_manager, pca):
@@ -111,6 +115,8 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.image = self.data_manager.radiographs[0].image
 
         self.openButton.clicked.connect(self._open_radiograph)
+        self.exportButton.clicked.connect(self._export_result)
+        self.exportButton.setEnabled(False)
 
         self.zoomSlider.setRange(-10, 10)
         self.zoomSlider.setValue(self.current_scale)
@@ -153,6 +159,22 @@ class FitterDialog(QDialog, Ui_fitterDialog):
             self.image = radiograph.image
             self._redraw(self.active_shape_model.current_tooth)
 
+    def _export_result(self):
+        directory = "./data/Out"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        file_dialog = QFileDialog(self)
+        path = file_dialog.getSaveFileName(self, "Export tooth location", directory)
+        parts = path[0].split("/")
+        directory = '/'.join(parts[:-1])
+        filename = parts[-1]
+
+        tooth = self.active_shape_model.get_current_tooth_positioned()
+        assert isinstance(tooth, Tooth)
+        tooth.export_landmarks(filename, directory)
+        tooth.export_segmentation(filename, self.radiograph_image.shape, directory)
+
     def change_scale(self, scale):
         self.current_scale = scale
         self.update_scale()
@@ -189,6 +211,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         pos = mouse_event.scenePos()
         self.active_shape_model.set_up((pos.x(), pos.y()), 60 / (
             2 ** self.current_sampling_level))
+        self.exportButton.setEnabled(True)
         self._redraw(self.active_shape_model.current_tooth)
 
     def _animator_entry(self):
@@ -222,6 +245,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.fullAsmCheckBox.setEnabled(True)
         self.scene.setEnabled(True)
         self.levelSlider.setEnabled(True)
+        self.exportButton.setEnabled(self.active_shape_model.current_tooth is not None)
 
     def _disable_ui(self):
         self.current_phase = None
@@ -230,6 +254,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
         self.fullAsmCheckBox.setEnabled(False)
         self.scene.setEnabled(False)
         self.levelSlider.setEnabled(False)
+        self.exportButton.setEnabled(False)
 
     def update_animation(self, tooth, params):
         self._set_sliders_from_params(params)
