@@ -57,15 +57,15 @@ class InitialPoseDialog(QDialog, Ui_PoseDialog):
         upper_jaw_image = self.pose_model._convert_to_binary_image(upper_jaw_image)
         lower_jaw_image = self.pose_model._convert_to_binary_image(lower_jaw_image)
 
-        upper_lines = self.pose_model._find_hough_lines(upper_jaw_image)
-        lower_lines = self.pose_model._find_hough_lines(lower_jaw_image)
+        upper_lines = self.pose_model._find_hough_lines(upper_jaw_image, threshold=30)
+        lower_lines = self.pose_model._find_hough_lines(lower_jaw_image, threshold=20)
 
         # Filter out lines
         upper_lines = self.pose_model._filter_lines(upper_lines, upper_jaw_image.shape)
         lower_lines = self.pose_model._filter_lines(lower_lines, lower_jaw_image.shape)
 
-        self.image = upper_jaw_image
-        self.lines = upper_lines
+        self.image = lower_jaw_image
+        self.lines = lower_lines
         self._redraw()
 
     def _open_radiograph(self):

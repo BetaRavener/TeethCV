@@ -13,8 +13,9 @@ class InitialPoseModel(object):
     crop_lower_jaw_size = 160
     top_jaw_line = None
     lower_jaw_line = None
-    max_angle = 10
-    close_lines_threshold = 40
+    max_angle = 25
+    close_lines_threshold = 60
+    side_lines_threshold = 100
 
     def __init__(self, data_manager):
         assert isinstance(data_manager, DataManager)
@@ -63,8 +64,8 @@ class InitialPoseModel(object):
         upper_jaw_image = self._convert_to_binary_image(upper_jaw_image)
         lower_jaw_image = self._convert_to_binary_image(lower_jaw_image)
 
-        upper_lines = self._find_hough_lines(upper_jaw_image)
-        lower_lines = self._find_hough_lines(lower_jaw_image)
+        upper_lines = self._find_hough_lines(upper_jaw_image, threshold=30)
+        lower_lines = self._find_hough_lines(lower_jaw_image, threshold=20)
 
         # Filter out lines
         upper_lines = self._filter_lines(upper_lines, upper_jaw_image.shape)
@@ -90,10 +91,10 @@ class InitialPoseModel(object):
                 (position1, 50, 0.1),
                 (position2, 50, 0.1),
                 (position3, 50, 0.2),
-                (position4, 40, 0),
-                (position5, 40, -0.1),
-                (position6, 40, -0.1),
-                (position7, 40, 0.2)
+                (position4, 35, -0.2),
+                (position5, 35, -0.1),
+                (position6, 35, -0.1),
+                (position7, 35, 0)
                 ]
 
     def _find_jaw_separation_line(self, image):
@@ -108,6 +109,12 @@ class InitialPoseModel(object):
         return  image[y_line: y_line+self.crop_lower_jaw_size, self.crop_sides_size:image.shape[1]-self.crop_sides_size]
 
     def _get_peak_range(self, histogram, min_index):
+        '''
+        Find peak range in histogram - for seperating jaws.
+        :param histogram: Sum of image rows.
+        :param min_index:
+        :return:
+        '''
         threshold = 5000
         minimum_value = histogram[min_index]
         max_range_index = min_index
@@ -130,16 +137,17 @@ class InitialPoseModel(object):
         image = np.array(image, dtype=np.uint8)
         return cv2.threshold(image, 8, 255, cv2.THRESH_BINARY)[1]
 
-    def _find_hough_lines(self, image):
+    def _find_hough_lines(self, image, threshold=30):
         #self.lines = cv2.HoughLinesP(self.image, 1, np.pi/90, 5, None, 80, 40)
-        lines = cv2.HoughLines(image, 1, 20*np.pi/180, 30, 0,0)
+        lines = cv2.HoughLines(image, 1, 20*np.pi/180, 20, 0,0)
         return lines
 
     def _filter_lines(self, lines, image_shape):
         mask = []
         # Filter only vertical lines
         for rho,theta in lines[0]:
-                if (theta >= np.pi/180*0 and theta <= np.pi/180*self.max_angle) or (theta >= np.pi/180*(180-self.max_angle) and theta <= np.pi/180*180):
+                if (theta >= np.pi/180*0 and theta <= np.pi/180*self.max_angle) \
+                        or (theta >= np.pi/180*(180-self.max_angle) and theta <= np.pi/180*180):
                     mask.append(True)
                 else:
                     mask.append(False)
@@ -147,21 +155,31 @@ class InitialPoseModel(object):
         lines = lines[0][mask]
         lines = sorted(lines, key=lambda item: item[0], reverse=True)
 
-        # Delete lines close together
-        mask = []
-        previous = 0
-        for rho,theta in lines:
-            if (rho < previous+self.close_lines_threshold and rho > previous-self.close_lines_threshold) \
-                    or (rho < self.close_lines_threshold):
-                mask.append(False)
+        #2 Delete lines close together, prefer vertical lines
+        indices = []
+        previous_rho = 0
+        previous_ind = 0
+        previous_theta = 0
+        for i, line_par in enumerate(lines):
+            rho,theta = line_par
+            if (rho < self.side_lines_threshold) or (rho > image_shape[1]-self.side_lines_threshold):
+                continue
+            elif (rho < previous_rho+self.close_lines_threshold and rho > previous_rho-self.close_lines_threshold):
+                if theta < previous_theta:
+                    previous_ind = i
+                    previous_theta = theta
             else:
-                mask.append(True)
-                previous = rho
-        mask = np.array(mask)
+                indices.append(previous_ind)
+                previous_rho = rho
+                previous_theta = theta
+                previous_ind = i
+        indices.pop(0)
+        indices.append(previous_ind)
         lines = np.array(lines)
-        lines = lines[mask]
+        lines = lines[indices]
 
-        # Filter only 3 lines - Go from the middle to the sides and add/remove lines
+
+        # Filter only 3 lines - Go from the middle to the sides
         middle = image_shape[1] / 2
         min_idx = 0
         min_dist = float('Inf')
@@ -170,7 +188,15 @@ class InitialPoseModel(object):
             if np.abs(rho-middle) < min_dist:
                 min_dist = np.abs(rho-middle)
                 min_idx = i
-        lines = lines[min_idx-1:min_idx+2]
+        new_lines = lines[min_idx-1:min_idx+2]
+
+        # Add lines if less than 3
+        if new_lines.shape[0] != 3:
+            rho, theta = lines[min_idx]
+            lines = [(rho+80, 0), (rho, theta), (rho-80, 0)]
+        else:
+            lines = new_lines
+
 
         # Return sorted from left to right tooth
         lines = sorted(lines, key=lambda item: item[0])
