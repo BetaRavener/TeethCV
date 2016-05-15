@@ -1,3 +1,6 @@
+import os
+
+import cv2
 import numpy as np
 from PyQt5.QtGui import QColor, QBrush, QFont, QPen
 from PyQt5.QtWidgets import QGraphicsSimpleTextItem
@@ -185,6 +188,22 @@ class Tooth(object):
                 text.setPos(self.landmarks[i][0] + self.landmark_size,
                             self.landmarks[i][1] - text.boundingRect().height() / 2)
                 text.setBrush(self.text_brush)
+
+    def export_landmarks(self, name_suffix, directory="./data/Out"):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        filename = directory + ("/landmarks-%s.txt" % name_suffix)
+        np.savetxt(filename, self.landmarks.flatten(), "%.6f")
+
+    def export_segmentation(self, name_suffix, image_dimensions, directory="./data/Out"):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        filename = directory + ("/segment-%s.png" % name_suffix)
+        img = np.zeros(image_dimensions)
+        cv2.fillConvexPoly(img, self.landmarks.astype(np.int32), 255)
+        cv2.imwrite(filename, img)
 
     @property
     def normals(self):

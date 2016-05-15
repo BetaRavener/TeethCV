@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\filtering.ui'
 #
-# Created: Tue May 10 18:16:28 2016
+# Created: Sun May 15 00:01:59 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

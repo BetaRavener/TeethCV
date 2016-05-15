@@ -63,3 +63,5 @@ target/
 
 .idea/
 data/Trained/
+data/Out/
+*.png

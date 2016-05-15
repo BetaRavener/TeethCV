@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './gui/qt\fitterdialog.ui'
 #
-# Created: Tue May 10 18:16:28 2016
+# Created: Sun May 15 00:01:59 2016
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -21,6 +21,9 @@ class Ui_fitterDialog(object):
         self.openButton = QtWidgets.QPushButton(fitterDialog)
         self.openButton.setObjectName("openButton")
         self.horizontalLayout_2.addWidget(self.openButton)
+        self.exportButton = QtWidgets.QPushButton(fitterDialog)
+        self.exportButton.setObjectName("exportButton")
+        self.horizontalLayout_2.addWidget(self.exportButton)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -119,6 +122,7 @@ class Ui_fitterDialog(object):
         _translate = QtCore.QCoreApplication.translate
         fitterDialog.setWindowTitle(_translate("fitterDialog", "Dialog"))
         self.openButton.setText(_translate("fitterDialog", "Open"))
+        self.exportButton.setText(_translate("fitterDialog", "Export"))
         self.label.setText(_translate("fitterDialog", "Zoom"))
         self.label_2.setText(_translate("fitterDialog", "Sampling Level"))
         self.sampledPositionsCheckBox.setText(_translate("fitterDialog", "Show sampled positions"))
