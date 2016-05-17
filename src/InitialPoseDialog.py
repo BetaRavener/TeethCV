@@ -45,7 +45,7 @@ class InitialPoseDialog(QDialog, Ui_PoseDialog):
         self._redraw()
 
     def find_jaw_divider(self):
-        self.y_top_line, self.y_lower_line = self.pose_model._find_jaw_separation_line(self.image)
+        self.y_top_line, self.y_lower_line = self.pose_model._find_jaw_separation_line(self.pose_model._crop_image_sides(self.image))
 
         upper_jaw_image = self.pose_model.crop_top_jaw(self.image, self.y_top_line)
         lower_jaw_image = self.pose_model.crop_lower_jaw(self.image, self.y_lower_line)
@@ -64,8 +64,8 @@ class InitialPoseDialog(QDialog, Ui_PoseDialog):
         upper_lines = self.pose_model._filter_lines(upper_lines, upper_jaw_image.shape, line_offset=6, max_line_gap=90)
         lower_lines = self.pose_model._filter_lines(lower_lines, lower_jaw_image.shape, line_offset=2, max_line_gap=60)
 
-        self.image = lower_jaw_image
-        self.lines = lower_lines
+        self.image = upper_jaw_image
+        self.lines = upper_lines
         self._redraw()
 
     def _open_radiograph(self):

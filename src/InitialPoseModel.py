@@ -51,7 +51,7 @@ class InitialPoseModel(object):
         return [basic_poses[i] for i in self.data_manager.selector]
 
     def _find_poses(self, image):
-        self.top_jaw_line, self.lower_jaw_line = self._find_jaw_separation_line(image)
+        self.top_jaw_line, self.lower_jaw_line = self._find_jaw_separation_line(self._crop_image_sides(image))
 
         upper_jaw_image = self.crop_top_jaw(image, self.top_jaw_line)
         lower_jaw_image = self.crop_lower_jaw(image, self.lower_jaw_line)
@@ -81,10 +81,10 @@ class InitialPoseModel(object):
         rho0, theta0 = lower_lines[0]
         rho1, theta1 = lower_lines[1]
         rho2, theta2 = lower_lines[2]
-        position4 = np.array((rho0-35+self.crop_sides_size, 95+self.lower_jaw_line))
-        position5 = np.array((rho0+(rho1-rho0)/2+self.crop_sides_size, 105+self.lower_jaw_line))
-        position6 = np.array((rho1+(rho2-rho1)/2+self.crop_sides_size, 105+self.lower_jaw_line))
-        position7 = np.array((rho2+40+self.crop_sides_size, 95+self.lower_jaw_line))
+        position4 = np.array((rho0-35+self.crop_sides_size, 75+self.lower_jaw_line))
+        position5 = np.array((rho0+(rho1-rho0)/2+self.crop_sides_size, 90+self.lower_jaw_line))
+        position6 = np.array((rho1+(rho2-rho1)/2+self.crop_sides_size, 90+self.lower_jaw_line))
+        position7 = np.array((rho2+40+self.crop_sides_size, 75+self.lower_jaw_line))
 
         return [(position0, 48, 0.1),
                 (position1, 55, 0.2),
@@ -100,6 +100,9 @@ class InitialPoseModel(object):
         y_histogram = cv2.reduce(image, 1, cv2.cv.CV_REDUCE_SUM, dtype=cv2.CV_32S)
         min_y = np.argmin(y_histogram)
         return self._get_peak_range(y_histogram, min_y)
+
+    def _crop_image_sides(self, image):
+        return image[:, self.crop_sides_size:image.shape[1]-self.crop_sides_size]
 
     def crop_top_jaw(self, image, y_line):
         return image[y_line-self.crop_upper_jaw_top_size:y_line, self.crop_sides_size:image.shape[1]-self.crop_sides_size]

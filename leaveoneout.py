@@ -34,7 +34,7 @@ def process_jaw(data_manager):
 
     # Find initial poses in the filtered image at level 0
     first_resolution_level = asm.multi_resolution_framework.get_level(0)
-    first_resolution_image = first_resolution_level.image
+    first_resolution_image = first_resolution_level.default_image
     initial_pose_model = InitialPoseModel(data_manager)
     initial_poses = initial_pose_model.find(first_resolution_image)
 
@@ -72,13 +72,13 @@ def measure_errors(data_manager, search_results):
     return errors
 
 
-def print_errors(errors):
+def print_errors(errors, divider=1):
     # Print header
     print "Tooth # | Avg error | Max error"
     print "-" * 31
     for i in range(0, len(errors)):
         avg_error, max_error = errors[i]
-        print "{0: >7} | {1: >9.6} | {2: >9.6}".format(i, avg_error, max_error)
+        print "{0: >7} | {1: >9.6} | {2: >9.6}".format(i, avg_error/divider, max_error/divider)
 
 
 def visualize_data(window, data_manager, search_results):
@@ -117,46 +117,76 @@ def export_data(data_manager, search_results):
         tooth.export_landmarks("loo-%d" % real_tooth_idx)
         tooth.export_segmentation("loo-%d" % real_tooth_idx, reference_image.shape)
 
+def compute_results(data_manager, all=False):
+    print "Processing upper jaw."
+    data_manager.select_upper_jaw()
+    upper_jaw_teeth = process_jaw(data_manager)
+
+    print "Results upper jaw."
+    upper_errors = measure_errors(data_manager, upper_jaw_teeth)
+    print_errors(upper_errors)
+    print ""
+    if not all:
+        visualize_data(window, data_manager, upper_jaw_teeth)
+        window.show()
+        myApp.exec_()
+    if export_flag:
+        export_data(data_manager, upper_jaw_teeth)
+
+    print "Processing lower jaw."
+    data_manager.select_lower_jaw()
+    lower_jaw_teeth = process_jaw(data_manager)
+
+    print "Results lower jaw."
+    lower_errors = measure_errors(data_manager, lower_jaw_teeth)
+    print_errors(lower_errors)
+    print ""
+    if not all:
+        visualize_data(window, data_manager, lower_jaw_teeth)
+        window.show()
+        myApp.exec_()
+    if export_flag:
+        export_data(data_manager, lower_jaw_teeth)
+    return upper_errors, lower_errors
+
+
 # Create main app
 myApp = QApplication(sys.argv)
 window = SimpleSceneWindow()
+computeTotal = False
 
-leave_out = int(input("Enter radiograph to leave out (1-14): ")) - 1
-if leave_out > 14 or leave_out < 0:
+leave_out = int(input("Enter radiograph to leave out (1-14, 0 for all): ")) - 1
+if leave_out > 14 or leave_out < -1:
     print 'Invalid selection'
     exit()
-
+if leave_out == -1:
+    computeTotal = True
 export_flag = (raw_input("Should the result be exported? (n/y): ") == "y")
 
-data_manager = DataManager(leave_out)
+upper_errors_sum = None
+lower_errors_sum = None
+if computeTotal:
+    for leave_out in range(0,14):
+        print "Leaving out image #",leave_out+1
+        data_manager = DataManager(leave_out)
+        upper_errors, lower_errors = compute_results(data_manager, all=True)
+        if upper_errors_sum is None:
+            upper_errors_sum = upper_errors
+        else:
+            upper_errors_sum = [(a+c, b+d) for (a,b),(c,d) in zip(upper_errors_sum, upper_errors)]
+        if lower_errors_sum is None:
+            lower_errors_sum = lower_errors
+        else:
+            lower_errors_sum = [(a+c, b+d) for (a,b),(c,d) in zip(lower_errors_sum, upper_errors)]
+    print "TOTAL Results upper jaw."
+    print_errors(upper_errors_sum, divider=14)
+    print "TOTAL Results lower jaw."
+    print_errors(lower_errors_sum, divider=14)
+else:
+    data_manager = DataManager(leave_out)
+    compute_results(data_manager)
+
 #visualize_data(window, data_manager, None)
 #window.show()
 #myApp.exec_()
 
-print "Processing upper jaw."
-data_manager.select_upper_jaw()
-upper_jaw_teeth = process_jaw(data_manager)
-
-print "Results upper jaw."
-errors = measure_errors(data_manager, upper_jaw_teeth)
-print_errors(errors)
-print ""
-visualize_data(window, data_manager, upper_jaw_teeth)
-window.show()
-myApp.exec_()
-if export_flag:
-    export_data(data_manager, upper_jaw_teeth)
-
-print "Processing lower jaw."
-data_manager.select_lower_jaw()
-lower_jaw_teeth = process_jaw(data_manager)
-
-print "Results lower jaw."
-errors = measure_errors(data_manager, lower_jaw_teeth)
-print_errors(errors)
-print ""
-visualize_data(window, data_manager, lower_jaw_teeth)
-window.show()
-myApp.exec_()
-if export_flag:
-    export_data(data_manager, lower_jaw_teeth)

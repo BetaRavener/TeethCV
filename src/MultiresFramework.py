@@ -13,6 +13,7 @@ __author__ = "Ivan Sevcik"
 
 class ResolutionLevel(object):
     image = None
+    default_image = None
     landmark_model = None
 
     def __init__(self, model_params):
@@ -113,6 +114,7 @@ class MultiResolutionFramework(object):
             median_kernel, bilateral_kernel, bilateral_color = MultiResolutionFramework.get_filter_presets(i)
             filtered_image = Filter.process_image(image.copy(), median_kernel, bilateral_kernel, bilateral_color)
             self.resolution_levels[i].image = filtered_image
+            self.resolution_levels[i].default_image = image.copy()
 
     @staticmethod
     def get_filter_presets(level_idx):
