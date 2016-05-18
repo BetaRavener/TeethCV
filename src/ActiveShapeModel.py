@@ -40,6 +40,7 @@ class ActiveShapeModel(object):
         self.mean_tooth = Tooth(to_landmarks_format(self.pca.mean))
         self.current_tooth = deepcopy(self.mean_tooth)
         self.current_tooth.transform(translation, scale, rotation)
+        self.current_params = np.zeros(self.pca.eigen_values.shape)
 
     def make_step(self, phase=None):
         if phase is None or phase == 0:
@@ -81,6 +82,9 @@ class ActiveShapeModel(object):
 
         while next_level >= 0:
             self.change_level(next_level)
+            # Show initial state
+            if step_callback is not None:
+                    step_callback()
 
             steps_left = ActiveShapeModel.max_steps_per_level
             while steps_left > 0:
