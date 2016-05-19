@@ -118,7 +118,7 @@ def export_data(data_manager, search_results):
         tooth.export_segmentation("loo-%d" % real_tooth_idx, reference_image.shape)
 
 
-def compute_results(data_manager, all=False):
+def compute_results(data_manager, all, export_flag):
     '''
     Compute leave one out results for one leaved tooth.
     :param data_manager: Data manager instance initialized with leaved tooth.
@@ -168,7 +168,6 @@ if leave_out > 14 or leave_out < -1:
     exit()
 if leave_out == -1:
     computeTotal = True
-export_flag = (raw_input("Should the result be exported? (n/y): ") == "y")
 
 upper_errors_sum = None
 lower_errors_sum = None
@@ -176,7 +175,7 @@ if computeTotal:
     for leave_out in range(0,14):
         print "Leaving out image #",leave_out+1
         data_manager = DataManager(leave_out)
-        upper_errors, lower_errors = compute_results(data_manager, all=True)
+        upper_errors, lower_errors = compute_results(data_manager, True, False)
         if upper_errors_sum is None:
             upper_errors_sum = upper_errors
         else:
@@ -191,10 +190,8 @@ if computeTotal:
     print "TOTAL Results lower jaw."
     print_errors(lower_errors_sum, divider=14)
 else:
+    export_flag = (raw_input("Should the result be exported? (n/y): ") == "y")
     data_manager = DataManager(leave_out)
-    compute_results(data_manager)
-
-#visualize_data(window, data_manager, None)
-#window.show()
-#myApp.exec_()
-
+    compute_results(data_manager, False, export_flag)
+    if export_flag:
+        print "Data have been exported to .\data\Out"
