@@ -23,20 +23,30 @@ class InitialPoseModel(object):
 
     @staticmethod
     def downsample_pose(pose, count=1):
+        '''
+        Downsample the pose.
+        :param pose: pose array
+        :param count: level in Gaussian pyramid
+        :return: tuple in format (np.array(x position, y position), scale, rotation)
+        '''
         translation, scale, rotation = pose
         return translation / (2**count), scale / (2**count), rotation
 
     def find(self, image):
         '''
-        Finds initial poses.
-        :param image:
-        :param level:
-        :return:
+        Finds initial poses for the image and select teeth according to data manager selector.
+        :param image: image instance
+        :return: array in format [(np.array(x position, y position), scale, rotation), ...]
         '''
         basic_poses = self._find_poses(image)
         return [basic_poses[i] for i in self.data_manager.selector]
 
     def _find_poses(self, image):
+        '''
+        Find initial poses for the image.
+        :param image: image instance
+        :return: array in format [(np.array(x position, y position), scale, rotation), ...]
+        '''
         self.top_jaw_line, self.lower_jaw_line = self._find_jaw_separation_line(self._crop_image_sides(image))
 
         upper_jaw_image = self.crop_upper_jaw(image, self.top_jaw_line)
@@ -87,7 +97,7 @@ class InitialPoseModel(object):
         '''
         Finds y coordinate of lines that separates upper and lower jaws.
         :param image:
-        :return:
+        :return: tuple (upper jaw line index, lower jaw line index)
         '''
         y_histogram = cv2.reduce(image, 1, cv2.cv.CV_REDUCE_SUM, dtype=cv2.CV_32S)
         return self._get_valley_range(y_histogram)
@@ -95,17 +105,17 @@ class InitialPoseModel(object):
     def _crop_image_sides(self, image):
         '''
         Crop image on from left and right side.
-        :param image:
-        :return:
+        :param image: image instance
+        :return: cropped image instance
         '''
         return image[:, self.crop_sides_size:image.shape[1]-self.crop_sides_size]
 
     def crop_upper_jaw(self, image, y_line):
         '''
         Crop image to upper jaw.
-        :param image:
-        :param y_line:
-        :return:
+        :param image: image instance
+        :param y_line: y coordinate of line
+        :return: cropped image instance
         '''
         return image[y_line-self.crop_upper_jaw_top_size:y_line, self.crop_sides_size:image.shape[1]-self.crop_sides_size]
 
@@ -114,7 +124,7 @@ class InitialPoseModel(object):
         Crop image to lower jaw.
         :param image:
         :param y_line:
-        :return:
+        :return: cropped image instance
         '''
         return  image[y_line: y_line+self.crop_lower_jaw_size, self.crop_sides_size:image.shape[1]-self.crop_sides_size]
 
@@ -123,7 +133,7 @@ class InitialPoseModel(object):
         Find range of valley in histogram by going to the sides from minimum until threshold is reached,
         used for seperating jaws.
         :param histogram: Sum of image rows.
-        :return:
+        :return: tuple (left index, right index)
         '''
         threshold = 5000
         min_index = np.argmin(histogram)
@@ -147,14 +157,20 @@ class InitialPoseModel(object):
     def _convert_to_binary_image(self, image):
         '''
         Converting image to the binary.
-        :param image:
-        :return:
+        :param image: image instance
+        :return: binary image instance
         '''
         image = np.array(image, dtype=np.uint8)
         return cv2.threshold(image, 8, 255, cv2.THRESH_BINARY)[1]
         #return cv2.Canny(image, 25, 30)
 
     def _find_hough_lines(self, image, threshold=20):
+        '''
+        Find lines in the image using Hough lines.
+        :param image: image instance
+        :param threshold: Hough lines threshold value
+        :return: array of lines
+        '''
         #self.lines = cv2.HoughLinesP(self.image, 1, np.pi/90, 5, None, 80, 40)
         lines = cv2.HoughLines(image, 1, 20*np.pi/180, threshold, 0,0)
         return lines
@@ -162,7 +178,7 @@ class InitialPoseModel(object):
     def _filter_lines(self, lines, image_shape, line_offset=5, max_line_gap=60):
         '''
         Filter our the lines in the image - close lines and not vertical lines.
-        :param lines:
+        :param lines: array of lines
         :param image_shape: Shape of the image.
         :param line_offset: Offset of line to the left.
         :param max_line_gap: Minimal threshold between lines, only one line within this threshold is retained.

@@ -49,6 +49,9 @@ class MultiResolutionFramework(object):
             self.resolution_levels.append(ResolutionLevel(MultiResolutionFramework._model_params[i]))
 
     def train(self):
+        '''
+        Train landmark model and prepare images for every level of Gaussian pyramid.
+        '''
         if Config.use_file_cache:
             success = True
             for i, level in enumerate(self.resolution_levels):
@@ -95,6 +98,11 @@ class MultiResolutionFramework(object):
             resolution_level.landmark_model.save_to_file(str(i))
 
     def get_level(self, level_idx):
+        '''
+        Get level of Gaussian pyramid.
+        :param level_idx: level index
+        :return: resolution level instance
+        '''
         if level_idx >= self.levels_count:
             return None
 
@@ -118,15 +126,31 @@ class MultiResolutionFramework(object):
 
     @staticmethod
     def get_filter_presets(level_idx):
+        '''
+        Get predefined values for the filers.
+        :param level_idx: index of the level
+        :return: tuple in format median kernel size, bilateral kernel size, bilateral color delta
+        '''
         return MultiResolutionFramework._filter_presets[level_idx]
 
     @staticmethod
     def downsample_image(image):
+        '''
+        Downsample image by going up in the Gaussian pyramid.
+        :param image: image instance
+        :return: downsampled image instance
+        '''
         # pyrDown means down-sampling, but it is actually going up in pyramid
         return cv2.pyrDown(image)
 
     @staticmethod
     def downsample(image, teeth):
+        '''
+        Downsample image and teeth landmarks of the coresponding image.
+        :param image: image instance
+        :param teeth: teeth array
+        :return:
+        '''
         image = MultiResolutionFramework.downsample_image(image)
         # Make copy of the teeth so original is not changed in place
         teeth = deepcopy(teeth)

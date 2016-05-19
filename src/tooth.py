@@ -27,9 +27,15 @@ class Tooth(object):
         self._calculate_centroid()
 
     def _calculate_centroid(self):
+        '''
+        Compute centroid of the tooth.
+        '''
         self._centroid = np.mean(self.landmarks, axis=0)
 
     def _calculate_normals(self):
+        '''
+        Compute normals for every landmark point.
+        '''
         point_count = self.landmarks.shape[0]
         left_normals = np.empty(self.landmarks.shape)
         right_normals = np.empty(self.landmarks.shape)
@@ -71,8 +77,6 @@ class Tooth(object):
         errors = differences / distances
 
         return np.average(errors), np.max(errors)
-        #TODO: Delete
-        #np.linalg.norm(predicted - actual_points, 2) / np.linalg.norm(actual_points, 2)
 
     def align(self, other):
         """
@@ -119,17 +123,29 @@ class Tooth(object):
         return scaling_factor
 
     def rotate(self, angle):
+        '''
+        Rotate this tooth.
+        :param angle: rotation angle in radians
+        '''
         rot_matrix = create_rotation_matrix(angle)
         self.landmarks = self.landmarks.dot(rot_matrix)
         self._normals = None
         self._centroid = None
 
     def scale(self, factor):
+        '''
+        Scale this tooth.
+        :param factor: scaling factor
+        '''
         self.landmarks *= factor
         self._normals = None
         self._centroid = None
 
     def translate(self, vec):
+        '''
+        Translate this tooth.
+        :param vec: vector of translations for each point
+        '''
         self.landmarks = self.landmarks + vec
         self._centroid = None
 
@@ -154,6 +170,15 @@ class Tooth(object):
         self.scale(2)
 
     def draw(self, scene, outline=True, landmarks=False, text=False, normals=False):
+        '''
+        Draw this tooth to the scene.
+        :param scene: scene where to draw
+        :param outline: Boolean whether to draw outline of this tooh
+        :param landmarks: Boolean whether to draw landmark points
+        :param text: Boolean whether to draw positions as text
+        :param normals: Boolean whether to draw normals
+        :return:
+        '''
         count = self.landmarks.shape[0]
 
         if outline:
@@ -190,6 +215,11 @@ class Tooth(object):
                 text.setBrush(self.text_brush)
 
     def export_landmarks(self, name_suffix, directory="./data/Out"):
+        '''
+        Export landmarks to a text file.
+        :param name_suffix: suffix name for this landmarks
+        :param directory: name of the directory where to save
+        '''
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -197,6 +227,12 @@ class Tooth(object):
         np.savetxt(filename, self.landmarks.flatten(), "%.6f")
 
     def export_segmentation(self, name_suffix, image_dimensions, directory="./data/Out"):
+        '''
+        Export segmentation of this landmarks as a binary image.
+        :param name_suffix: suffix name
+        :param image_dimensions: dimensionality of the image
+        :param directory: name of the directory where to save
+        '''
         if not os.path.exists(directory):
             os.makedirs(directory)
 
