@@ -142,6 +142,7 @@ class FitterDialog(QDialog, Ui_fitterDialog):
 
         self.show_sampled_positions = self.sampledPositionsCheckBox.isChecked()
         self.sampledPositionsCheckBox.stateChanged.connect(self.change_show_positions)
+        self.startingPoseSpinBox.setMaximum(len(self.data_manager.selector)-1)
 
         self._redraw(self.active_shape_model.current_tooth)
 
