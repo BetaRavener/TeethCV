@@ -13,6 +13,8 @@ from src.radiograph import Radiograph
 from src.utils import toQImage
 from src.filter import Filter
 
+author__ = "Jakub Macina"
+
 
 class InitialPoseDialog(QDialog, Ui_PoseDialog):
     data_manager = None
@@ -47,7 +49,7 @@ class InitialPoseDialog(QDialog, Ui_PoseDialog):
     def find_jaw_divider(self):
         self.y_top_line, self.y_lower_line = self.pose_model._find_jaw_separation_line(self.pose_model._crop_image_sides(self.image))
 
-        upper_jaw_image = self.pose_model.crop_top_jaw(self.image, self.y_top_line)
+        upper_jaw_image = self.pose_model.crop_upper_jaw(self.image, self.y_top_line)
         lower_jaw_image = self.pose_model.crop_lower_jaw(self.image, self.y_lower_line)
 
         # Filter the image

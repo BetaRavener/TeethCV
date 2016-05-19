@@ -13,7 +13,7 @@ from src.simplescenewindow import SimpleSceneWindow
 from src.tooth import Tooth
 from src.utils import toQImage
 
-__author__ = "Ivan Sevcik"
+__author__ = "Ivan Sevcik, Jakub Macina"
 
 
 def process_jaw(data_manager):
@@ -117,7 +117,14 @@ def export_data(data_manager, search_results):
         tooth.export_landmarks("loo-%d" % real_tooth_idx)
         tooth.export_segmentation("loo-%d" % real_tooth_idx, reference_image.shape)
 
+
 def compute_results(data_manager, all=False):
+    '''
+    Compute leave one out results for one leaved tooth.
+    :param data_manager: Data manager instance initialized with leaved tooth.
+    :param all:
+    :return:
+    '''
     print "Processing upper jaw."
     data_manager.select_upper_jaw()
     upper_jaw_teeth = process_jaw(data_manager)
@@ -178,6 +185,7 @@ if computeTotal:
             lower_errors_sum = lower_errors
         else:
             lower_errors_sum = [(a+c, b+d) for (a,b),(c,d) in zip(lower_errors_sum, upper_errors)]
+    print "#" * 50
     print "TOTAL Results upper jaw."
     print_errors(upper_errors_sum, divider=14)
     print "TOTAL Results lower jaw."
