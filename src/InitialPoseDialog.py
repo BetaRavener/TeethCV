@@ -64,8 +64,8 @@ class InitialPoseDialog(QDialog, Ui_PoseDialog):
         upper_lines = self.pose_model._filter_lines(upper_lines, upper_jaw_image.shape, line_offset=6, max_line_gap=90)
         lower_lines = self.pose_model._filter_lines(lower_lines, lower_jaw_image.shape, line_offset=2, max_line_gap=60)
 
-        self.image = upper_jaw_image
-        self.lines = upper_lines
+        self.image = lower_jaw_image
+        self.lines = lower_lines
         self._redraw()
 
     def _open_radiograph(self):

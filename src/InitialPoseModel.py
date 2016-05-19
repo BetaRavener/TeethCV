@@ -81,19 +81,19 @@ class InitialPoseModel(object):
         rho0, theta0 = lower_lines[0]
         rho1, theta1 = lower_lines[1]
         rho2, theta2 = lower_lines[2]
-        position4 = np.array((rho0-35+self.crop_sides_size, 75+self.lower_jaw_line))
+        position4 = np.array((rho0-40+self.crop_sides_size, 90+self.lower_jaw_line))
         position5 = np.array((rho0+(rho1-rho0)/2+self.crop_sides_size, 90+self.lower_jaw_line))
         position6 = np.array((rho1+(rho2-rho1)/2+self.crop_sides_size, 90+self.lower_jaw_line))
-        position7 = np.array((rho2+40+self.crop_sides_size, 75+self.lower_jaw_line))
+        position7 = np.array((rho2+40+self.crop_sides_size, 90+self.lower_jaw_line))
 
-        return [(position0, 48, 0.1),
+        return [(position0, 48, 0.05),
                 (position1, 55, 0.2),
                 (position2, 55, 0.2),
                 (position3, 48, 0.3),
-                (position4, 35, 0),
-                (position5, 38, -0.03),
-                (position6, 38, -0.05),
-                (position7, 35, -0.1)
+                (position4, 40, 0),
+                (position5, 38, -0.05),
+                (position6, 38, -0.10),
+                (position7, 40, -0.15)
                 ]
 
     def _find_jaw_separation_line(self, image):
@@ -138,6 +138,7 @@ class InitialPoseModel(object):
     def _convert_to_binary_image(self, image):
         image = np.array(image, dtype=np.uint8)
         return cv2.threshold(image, 8, 255, cv2.THRESH_BINARY)[1]
+        #return cv2.Canny(image, 25, 30)
 
     def _find_hough_lines(self, image, threshold=20):
         #self.lines = cv2.HoughLinesP(self.image, 1, np.pi/90, 5, None, 80, 40)
