@@ -7,6 +7,14 @@ __author__ = "Ivan Sevcik"
 class Sampler(object):
     @staticmethod
     def _find_sample_positions(center_point, normal, sample_count):
+        """
+        Finds sampling position for a given central point and normal.
+        :param center_point: Point around which to sample.
+        :param normal: A normal along which to sample.
+        :param sample_count: Number of pixels that should be sampled at each side of 'center_point'
+        :return: (2*sample_count+1) sampling positions going from the most negative normal position to the most positive
+                 normal position.
+        """
         positive_samples = list()
         negative_samples = list()
         center_point_tuple = tuple(center_point.astype(np.int32))
@@ -35,6 +43,12 @@ class Sampler(object):
 
     @staticmethod
     def _sample_image(image, positions):
+        """
+        Samples image at specified positions.
+        :param image: Image to sample.
+        :param positions: Positions at which to sample.
+        :return: A numpy array of sampled pixel values.
+        """
         samples = list()
         for position in positions:
             if position[0] < 0 or position[1] < 0 or position[0] >= image.shape[1] or position[1] >= image.shape[0]:
@@ -46,6 +60,16 @@ class Sampler(object):
 
     @staticmethod
     def sample(tooth, radiograph_image, sample_count, normalize=False, return_positions=None):
+        """
+        Samples the 'radiograph' image along normals of each landmark point creating 'tooth' shape.
+        :param tooth: Tooth along which's landmark points should be sampled.
+        :param radiograph_image: A radiograph image to sample.
+        :param sample_count: Specifies how many pixels on each side of the point should be sampled/
+        :param normalize: If true, the pixel values of the sampled vector are normalized into range <0, 1>
+        :param return_positions: If list is passed as this argument, it will be filled by positions at which the pixels
+                                 were sampled from the image.
+        :return: A numpy array of sampled pixel values.
+        """
         assert isinstance(tooth, Tooth)
         assert isinstance(radiograph_image, np.ndarray)
 

@@ -12,26 +12,62 @@ class PCA(object):
 
     @staticmethod
     def project(W, X, mu=None):
+        """
+        Projects and object described by vector X on set of eigenvectors 'W' and mean shape 'mu'.
+        :param W: A set of eigenvectors.
+        :param X: An object to project.
+        :param mu: Mean shape that all of objects shared.
+        :return: Eigenvalues that correspond to shape X in lower dimension.
+        """
         if mu is None:
             return np.dot(X, W)
         return np.dot(X - mu, W)
 
     def project(self, X):
+        """
+        Projects an object described by vector X on previously trained PCA data.
+        :param X: An object to project.
+        :return: Eigenvalues that correspond to shape X in lower dimension.
+        """
         return np.dot(X - self.mean, self.eigen_vectors)
 
     def get_allowed_deviation(self):
+        """
+        Calculates range of allowed deviations for each eigenvalue so that an object with eigenvalues in this range can
+        still be considered a valid one.
+        :return: A vector of maximum deviations. Eigenvalues must lie in range of <-max_dev, max_dev> to be considered
+        a valid one.
+        """
         return 2 * np.sqrt(self.eigen_values)
 
     @staticmethod
     def reconstruct(W, Y, mu=None):
+        """
+        Reconstructs the instance by using eigenvectors, eigenvalues and mean shape
+        :param W: Eigenvectors that represent the instance variations in lower dimension.
+        :param Y: Eigenvalues that control how much of each eigenvector will be included in the returned object.
+        :param mu: Mean shape that all of objects shared.
+        :return: Reconstructed object.
+        """
         if mu is None:
             return np.dot(Y, W.T)
         return np.dot(Y, W.T) + mu
 
     def reconstruct(self, Y):
+        """
+        Reconstructs object by using previously trained PCA and a set of eigenvalues.
+        :param Y: Eigenvalues that control how much of each eigenvector will be included in the returned object.
+        :return: Reconstructed object.
+        """
         return np.dot(Y, self.eigen_vectors.T) + self.mean
 
     def train(self, X, num_components=0):
+        """
+        Uses Principal Component Analysis on data to reduce dimensionality of the problem.
+        :param X: Data in a form of matrix where each row represents a single training object (image, landmark vector)
+        :param num_components: Maximum number of components that should be found. If 0, all components are found.
+        :return: tuple of eigenvalues, eigenvectors and mean shape
+        """
         [n, d] = X.shape
         if (num_components <= 0) or (num_components > n):
             num_components = n
@@ -61,6 +97,12 @@ class PCA(object):
         return result
 
     def threshold(self, value):
+        """
+        Thresholds the PCA by selecting only first N eigenvalues that explain at least 'value' of all variations in
+        shape.
+        :param value: Thresholding value
+        """
+
         # Limit the value into acceptable region
         value = max(0., min(value, 1.))
 

@@ -8,6 +8,7 @@ from src.tooth import Tooth
 
 __author__ = "Ivan Sevcik"
 
+
 class LandmarkModel(object):
     radiograph_samples = None
     k = None
@@ -33,7 +34,7 @@ class LandmarkModel(object):
             # Get samples (40, X), where X is number 2*number_of_samples+1
             sample_matrix = Sampler.sample(tooth, image, self.k, self.normalize)
             self.radiograph_samples.append(sample_matrix)
-            print "Sampling tooth %d done" % (i+1)
+            print "Sampling tooth %d done" % (i + 1)
 
     def finish_training(self):
         '''
@@ -59,17 +60,25 @@ class LandmarkModel(object):
         return Tooth(np.array(new_landmarks))
 
     def _find_best_position(self, sampled_profile, point_index):
+        """
+        Method which find finds best alignment position for a given point of model and supplied sampled profile.
+        :param sampled_profile: Sampled profile to search.
+        :param point_index: Index of a point of this model for which to search.
+        :return: An offset to sampled_profile at which the point exhibits best alignment.
+        """
         pass
 
     @staticmethod
     def _get_mean_and_covariance(data):
         """
-
-        :param data: Data in this format: rows are variables and each columns are observations (one column = one observation of all variables)
-                        0, 1, 2, 3, 4,..
-                     x1|1| 2| 2| 0| 1|..
-                     x2|0| 1| 0| 1| 2|..
-                     ..|.|..|..|..|..|..
+        Calculates mean and covariance data from supplied 'data' matrix.
+        :param data: Data in this format: rows are variables and each columns are observations (one column = one
+                     observation of all variables)
+                       | 0| 1| 2| 3| 4|..
+                     --+--+--+--+--+--+--
+                     x1| 1| 2| 2| 0| 1|..
+                     x2| 0| 1| 0| 1| 2|..
+                     ..|..|..|..|..|..|..
         :return: mean and covariance matrix for the data
         """
         mean = np.mean(data, axis=1)

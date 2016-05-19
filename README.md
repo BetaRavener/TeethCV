@@ -6,4 +6,5 @@ Incisor Segmentation project
 
 1. Start Anaconda environment configured from file './cfg/condacv.env' in command prompt or shell
 2. Navigate to this directory ('./')
-3. Run 'python main.py' command
+3a. Run 'python main.py' command to run GUI.
+3b. Run 'python leaveoneout.py' command to perform leave one out cross validation.
