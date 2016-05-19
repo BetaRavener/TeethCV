@@ -5,7 +5,13 @@ from src.tooth import Tooth
 
 __author__ = "Ivan Sevcik"
 
+
 def read_landmarks(filename):
+    '''
+    Read landmark from filename.
+    :param filename: Path to landmark.
+    :return: numpy array of landmark.
+    '''
     with open(filename) as landmarks_file:
         arr = np.array(landmarks_file.readlines(), dtype=float)
 
@@ -24,6 +30,11 @@ class Radiograph:
         self._teeth = list()
 
     def load(self, idx, annotated=False):
+        '''
+        Load the radiograph on index idx.
+        :param idx: Index of radiograph.
+        :param annotated: Boolean value if the landmarks to radiograph exist.
+        '''
         self.idx = idx
 
         # Load and draw landmarks

@@ -39,25 +39,58 @@ class DataManager:
         return teeth
 
     def count_all_teeth(self):
+        '''
+        Count all teeth available.
+        :return: teeth count
+        '''
         return len(self.get_all_teeth())
 
     def get_tooth(self, radiograph_idx, tooth_idx, make_copy=False):
+        '''
+        Get tooth from radiograph.
+        :param radiograph_idx: radiograph index
+        :param tooth_idx: tooth index
+        :param make_copy: Boolean whether to make a deep copy on return
+        :return: instance of the tooth
+        '''
         tooth = [self.radiographs[radiograph_idx]._teeth[i] for i in self.selector][tooth_idx]
         return deepcopy(tooth) if make_copy else tooth
 
     def get_tooth_from_all(self, total_tooth_idx, make_copy=False):
+        '''
+        Get tooth with index from all radiographs.
+        :param total_tooth_idx: tooth index
+        :param make_copy: Boolean whether to make a deep copy on return
+        :return: teeth instances
+        '''
         tooth = self.get_all_teeth()[total_tooth_idx]
         return deepcopy(tooth) if make_copy else tooth
 
     def get_all_teeth_from_radiograph(self, radiograph, make_copy=False):
+        '''
+        Get all incisor teeth from radiograph.
+        :param radiograph: instance of radiograph
+        :param make_copy: Boolean whether to make a deep copy on return
+        :return: teeth instances
+        '''
         teeth = [radiograph._teeth[i] for i in self.selector]
         return deepcopy(teeth) if make_copy else teeth
 
     def select_all_teeth(self):
+        '''
+        Set the selector filter to all 8 incisor teeth.
+        '''
         self.selector = range(0, 8)
 
     def select_upper_jaw(self):
+        '''
+        Set the selector filter to all upper incisor teeth.
+        '''
         self.selector = range(0, 4)
 
     def select_lower_jaw(self):
+        '''
+        Set the selector filter to all lower incosor teeth.
+        :return:
+        '''
         self.selector = range(4, 8)
