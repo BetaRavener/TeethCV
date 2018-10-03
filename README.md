@@ -1,5 +1,5 @@
 # TeethCV
-Incisor Segmentation project. The implementation is using Active Shape Model approach to identify teeth in radiograph image.
+Incisor Segmentation project. The implementation is using Active Shape Model approach to identify teeth in radiograph image. **More details in [report](https://github.com/BetaRavener/TeethCV/blob/master/report.pdf)**.
 
 ### How to run application
 (Note: All filepaths are relative to this README file)
